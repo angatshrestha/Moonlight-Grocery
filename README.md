@@ -5,7 +5,7 @@ A modern eCommerce web application designed to provide a seamless online grocery
 ---
 
 ## Project Overview
-Moonlight Grocery is an online platform where customers can browse grocery products, add items to their cart, and place orders بسهولة. The system is designed to be responsive, fast, and visually appealing with a premium dark (moonlight) theme.
+Moonlight Grocery is an online platform where customers can browse grocery products, add items to their cart, and place orders. The system is designed to be responsive, fast, and visually appealing with a premium dark (moonlight) theme.
 
 This project aims to simplify grocery shopping by providing:
 - Easy product discovery  
