@@ -8,7 +8,7 @@ In today’s fast-paced lifestyle, many people struggle to find time for regular
 
 While online grocery platforms exist, many of them are not optimized for a smooth and modern user experience. Users often face issues such as complicated interfaces, slow navigation, limited personalization, and inefficient checkout processes. Additionally, some platforms focus heavily on large-scale supermarket operations, making it harder for users to quickly find what they need or explore better alternatives.
 
-The problem is not just about buying groceries online — it is about providing a fast, simple, and enjoyable shopping experience that saves time and reduces effort.
+The problem is not just about buying groceries online it is about providing a fast, simple, and enjoyable shopping experience that saves time and reduces effort.
 
 ---
 
@@ -53,7 +53,7 @@ The proposed solution is a platform called **Moonlight Grocery**.
 
 This platform aims to deliver a modern, efficient, and user-friendly grocery shopping experience. It would allow users to:
 - browse products quickly with a clean interface  
-- search and filter items بسهولة  
+- search and filter items  
 - add products to cart and manage orders easily  
 - enjoy a visually appealing dark (moonlight) themed design  
 - experience fast and responsive performance across devices  
@@ -67,7 +67,7 @@ Future features may include:
 ---
 
 ## Australian Market Context
-This problem is especially relevant in Australia, where busy urban lifestyles and increasing digital adoption have driven demand for online services. Cities like [Sydney](chatgpt://generic-entity?number=0) have a large population of students and working professionals who rely on convenient and time-saving solutions.
+This problem is especially relevant in Australia, where busy urban lifestyles and increasing digital adoption have driven demand for online services. Cities like [Sydney] have a large population of students and working professionals who rely on convenient and time-saving solutions.
 
 The Australian grocery market is highly competitive, but there is still a gap for platforms that prioritize user experience, speed, and modern design. Many existing solutions focus on scale rather than simplicity, leaving room for innovation.
 
