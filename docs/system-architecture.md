@@ -427,6 +427,7 @@ UI → API → Business Logic → Database → Response
 ---
 
 ## 11. Architecture Diagram (Text)
+```
 +---------------------------+
 |     Frontend (React)      |
 |  Customer & Admin UI      |
@@ -441,13 +442,13 @@ UI → API → Business Logic → Database → Response
             v
 +------------------------------------------------------+
 |                   Core Modules                       |
-|  Auth | Product | Cart | Order | Payment | Notification |
+| Auth | Product | Cart | Order | Payment | Notification|
 +------------------------------------------------------+
             |
             v
 +---------------------------+
 |     PostgreSQL Database   |
-|  Users | Orders | Products|
+| Users | Orders | Products |
 +---------------------------+
             |
             v
@@ -455,7 +456,7 @@ UI → API → Business Logic → Database → Response
 |        External Services / APIs             |
 | Stripe | Email | SMS | Google Maps API     |
 +---------------------------------------------+
-
+```
 ## 12. Deployment
 
 - Frontend → Vercel  
