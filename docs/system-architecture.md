@@ -354,7 +354,7 @@ The system follows a **3-tier architecture**:
 
 ## 8. Data Flow
 
-### Figure 3: Order Processing Data Flow Diagram
+###  Order Processing Data Flow Diagram
 ```text
 +----------------------+
 |      Customer        |
@@ -442,6 +442,7 @@ The system follows a **3-tier architecture**:
 +----------------------+
 ```
 ---
+This diagram shows the step-by-step process from product browsing to order delivery. It highlights how the frontend, backend, database, and external services interact to complete an order successfully.
 
 ### Example: Order Process
 
