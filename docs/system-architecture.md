@@ -427,16 +427,34 @@ UI → API → Business Logic → Database → Response
 ---
 
 ## 11. Architecture Diagram (Text)
-Frontend (React)
-↓
-Node.js API (Express)
-↓
-Modules (Auth, Product, Order, Payment, Notification)
-↓
-PostgreSQL Database
-↓
-External APIs (Stripe, Email, Maps)
----
++---------------------------+
+|     Frontend (React)      |
+|  Customer & Admin UI      |
++---------------------------+
+            |
+            v
++---------------------------+
+|   Backend API Layer       |
+|   Node.js + Express       |
++---------------------------+
+            |
+            v
++------------------------------------------------------+
+|                   Core Modules                       |
+|  Auth | Product | Cart | Order | Payment | Notification |
++------------------------------------------------------+
+            |
+            v
++---------------------------+
+|     PostgreSQL Database   |
+|  Users | Orders | Products|
++---------------------------+
+            |
+            v
++---------------------------------------------+
+|        External Services / APIs             |
+| Stripe | Email | SMS | Google Maps API     |
++---------------------------------------------+
 
 ## 12. Deployment
 
