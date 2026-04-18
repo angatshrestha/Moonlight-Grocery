@@ -1,0 +1,53 @@
+---
+
+## 12. Deployment
+
+- Frontend → Vercel  
+- Backend → Render  
+- Database → PostgreSQL Cloud  
+
+---
+
+## 13. Scalability Plan
+
+Future upgrades:
+
+- microservices split  
+- Redis caching  
+- CDN  
+- message queue  
+- analytics  
+
+---
+
+## 14. Advantages
+
+- low cost  
+- simple  
+- scalable  
+- secure  
+- easy maintenance  
+
+---
+
+## 15. Limitations
+
+- harder to scale at very large size  
+- single backend system  
+
+---
+
+## 16. Final Recommendation
+
+- React.js  
+- Node.js + Express  
+- PostgreSQL  
+- JWT  
+- Stripe  
+- Google Maps API  
+
+---
+
+## 17. Conclusion
+
+This architecture provides a strong and scalable foundation for Moonlight Grocery. It supports all core features while remaining simple and cost-effective, with room for future expansion.
