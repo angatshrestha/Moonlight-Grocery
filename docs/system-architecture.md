@@ -8,7 +8,7 @@
 
 ## 1. Introduction
 
-This document explains the technical architecture for **Moonlight Grocery**, a small online grocery store based in Granville, Sydney, serving mainly Nepali, Indian, and Bangladeshi customers.
+This document explains the technical architecture for **Moonlight Grocery**, a small online grocery store based in  Sydney, serving mainly Nepali, Indian, and Bangladeshi customers.
 
 The system will allow customers to:
 - browse products
