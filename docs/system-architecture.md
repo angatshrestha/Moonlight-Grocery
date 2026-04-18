@@ -426,7 +426,7 @@ UI → API → Business Logic → Database → Response
 
 ---
 
-## 11. Architecture Diagram (Text)
+## 11. Architecture Diagram 
 ```
 +---------------------------+
 |     Frontend (React)      |
