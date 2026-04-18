@@ -354,8 +354,93 @@ The system follows a **3-tier architecture**:
 
 ## 8. Data Flow
 
-### General Flow
-UI → API → Business Logic → Database → Response
+### Figure 3: Order Processing Data Flow Diagram
+```text
++----------------------+
+|      Customer        |
+| Browse & Add to Cart |
++----------------------+
+           |
+           v
++----------------------+
+|   Frontend (React)   |
+|  Displays Products   |
++----------------------+
+           |
+           v
++----------------------+
+| Backend API Layer    |
+| Node.js + Express    |
++----------------------+
+           |
+           v
++------------------------------+
+| Product Module               |
+| Fetch Products from DB       |
++------------------------------+
+           |
+           v
++----------------------+
+|   PostgreSQL DB      |
+|   Product Data       |
++----------------------+
+           |
+           v
++----------------------+
+|   Frontend (Cart)    |
+|  User Proceeds       |
+|  to Checkout         |
++----------------------+
+           |
+           v
++------------------------------+
+| Order Module                 |
+| Create Order Record          |
++------------------------------+
+           |
+           v
++------------------------------+
+| Payment Gateway (Stripe)     |
+| Process Payment              |
++------------------------------+
+      |                |
+      | Success        | Failed
+      v                v
++------------------+   +----------------------+
+| Payment Stored   |   |  Show Error to User  |
+| in Database      |   +----------------------+
++------------------+
+           |
+           v
++------------------------------+
+| Update Order Status          |
+| (Confirmed / Processing)     |
++------------------------------+
+           |
+           v
++------------------------------+
+| Notification Module          |
+| Email / SMS Confirmation     |
++------------------------------+
+           |
+           v
++------------------------------+
+| Admin Dashboard              |
+| View & Process Order         |
++------------------------------+
+           |
+           v
++------------------------------+
+| Delivery Module              |
+| Update Delivery Status       |
++------------------------------+
+           |
+           v
++----------------------+
+|   Customer           |
+| Receives Updates     |
++----------------------+
+```
 ---
 
 ### Example: Order Process
