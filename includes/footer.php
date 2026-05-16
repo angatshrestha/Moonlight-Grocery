@@ -25,7 +25,7 @@
             <div class="col-md-4">
                 <h5 class="font-weight-bold mb-4" style="color: var(--secondary-color);">Contact Us</h5>
                 <ul class="list-unstyled text-light small">
-                    <li class="mb-2"><i class="fas fa-map-marker-alt mr-2"></i> 123 Moonlight Ave, Sydney, NSW 2000</li>
+                    <li class="mb-2"><i class="fas fa-map-marker-alt mr-2"></i> 2 pitt street, NSW 2000</li>
                     <li class="mb-2"><i class="fas fa-phone mr-2"></i> +61 2 1234 5678</li>
                     <li class="mb-2"><i class="fas fa-envelope mr-2"></i> support@moonlightgrocery.com</li>
                 </ul>
