@@ -2,8 +2,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --primary-color: #2563eb;
-    --secondary-color: #1e40af;
+    --primary-color: #2d1457;
+    --secondary-color: #ffc107;
+    --primary-dark: #0a58ca;
     --background-color: #f8fafc;
     --text-color: #0f172a;
     --card-bg: #ffffff;
@@ -18,7 +19,7 @@ body {
 }
 
 .navbar {
-    background: rgba(255, 255, 255, 0.8) !important;
+    background: var(--primary-color) !important;
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border-color);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
@@ -26,7 +27,7 @@ body {
 
 .navbar-brand {
     font-weight: 700;
-    color: var(--primary-color) !important;
+    color: var(--secondary-color) !important;
     letter-spacing: -0.5px;
 }
 
@@ -201,4 +202,94 @@ body {
     border: 1px solid var(--border-color);
     align-self: flex-start;
     border-bottom-left-radius: 4px;
+}
+
+/* Daily Offers Carousel - Premium Design */
+.offers-carousel {
+    overflow: hidden;
+    margin-bottom: 4rem;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.carousel-img {
+    height: 500px;
+    object-fit: cover;
+    transform: scale(1.05);
+    transition: transform 10s ease-in-out;
+}
+
+.carousel-item.active .carousel-img {
+    transform: scale(1);
+}
+
+.offers-caption-wrapper {
+    bottom: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0) 100%);
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    max-width: 650px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+/* Custom Indicators */
+.carousel-indicators {
+    bottom: 20px;
+}
+
+.carousel-indicators li {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin: 0 6px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.carousel-indicators .active {
+    width: 30px;
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(255,255,255,0.8);
+}
+
+/* Custom Carousel Buttons */
+.offers-caption-wrapper .btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border: none;
+    border-radius: 30px;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);
+    transition: all 0.3s ease;
+}
+
+.offers-caption-wrapper .btn-primary:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.5);
+    background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+}
+
+.text-shadow {
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

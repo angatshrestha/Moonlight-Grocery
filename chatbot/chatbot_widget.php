@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
         appendMessage('<i class="fas fa-circle-notch fa-spin"></i> Typing...', 'bot', typingId);
 
         // Send to backend
-        fetch('/chatbot/api.php', {
+        fetch('chatbot/api.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

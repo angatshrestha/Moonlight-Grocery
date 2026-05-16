@@ -19,6 +19,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['user_name'] = $user->name;
         $_SESSION['user_role'] = $user->role;
         
+        if ($user->role === 'driver') {
+            header("Location: driver/index.php");
+            exit;
+        }
+        
         $redirect = $_SESSION['redirect_to'] ?? 'index.php';
         unset($_SESSION['redirect_to']);
         header("Location: $redirect");
@@ -49,8 +54,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="email" name="email" class="form-control" required placeholder="name@example.com">
                     </div>
                     <div class="form-group">
-                        <label class="font-weight-bold">Password</label>
-                        <input type="password" name="password" class="form-control" required placeholder="••••••••">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="font-weight-bold mb-0">Password</label>
+                            <a href="reset_password.php" class="text-primary small font-weight-bold">Forgot password?</a>
+                        </div>
+                        <input type="password" name="password" class="form-control mt-2" required placeholder="••••••••">
                     </div>
                     <button type="submit" class="btn btn-primary btn-block btn-lg mt-4">Login</button>
                 </form>

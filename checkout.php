@@ -13,30 +13,76 @@ if (empty($cartItems)) {
     exit;
 }
 
+$stmt = $pdo->prepare("SELECT points FROM users WHERE id = ?");
+$stmt->execute([$_SESSION['user_id']]);
+$userPoints = $stmt->fetchColumn() ?: 0;
+
+// Pre-calculate subtotal for UI
+$cartSubtotal = 0;
+$ids = implode(',', array_keys($cartItems));
+$uiProducts = $pdo->query("SELECT id, price FROM products WHERE id IN ($ids)")->fetchAll(PDO::FETCH_ASSOC);
+foreach ($uiProducts as $p) {
+    $cartSubtotal += $p['price'] * $cartItems[$p['id']];
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $address = $_POST['address'] ?? '';
+    // Collect and format detailed address
+    $street = trim($_POST['street'] ?? '');
+    $apt = trim($_POST['apartment'] ?? '');
+    $city = trim($_POST['city'] ?? '');
+    $state = trim($_POST['state'] ?? '');
+    $postcode = trim($_POST['postcode'] ?? '');
     
-    if (empty($address)) {
-        $error = "Delivery address is required.";
+    $addressParts = [];
+    if (!empty($apt)) $addressParts[] = $apt;
+    if (!empty($street)) $addressParts[] = $street;
+    if (!empty($city)) $addressParts[] = $city;
+    if (!empty($state)) $addressParts[] = $state;
+    if (!empty($postcode)) $addressParts[] = $postcode;
+    
+    $address = implode(', ', $addressParts);
+    
+    $phone = $_POST['phone'] ?? '';
+    $verified = $_POST['phone_verified'] ?? '0';
+    $use_points = isset($_POST['use_points']) ? true : false;
+    
+    if (empty($street) || empty($city) || empty($phone)) {
+        $error = "Delivery address and phone number are required.";
+    } elseif ($verified !== '1') {
+        $error = "Please verify your phone number via OTP.";
     } else {
         try {
             $pdo->beginTransaction();
             
-            // Calculate total
+            // Calculate subtotal
             $ids = implode(',', array_keys($cartItems));
             $stmt = $pdo->query("SELECT id, price FROM products WHERE id IN ($ids)");
             $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
-            $total = 0;
+            $subtotal = 0;
             $productPrices = [];
             foreach ($products as $p) {
-                $total += $p['price'] * $cartItems[$p['id']];
+                $subtotal += $p['price'] * $cartItems[$p['id']];
                 $productPrices[$p['id']] = $p['price'];
             }
             
+            // Apply points discount
+            $discount = 0;
+            $pointsToDeduct = 0;
+            if ($use_points && $userPoints >= 100) {
+                $discount = floor($userPoints / 100);
+                if ($discount > $subtotal) {
+                    $discount = floor($subtotal);
+                }
+                $pointsToDeduct = $discount * 100;
+            }
+            
+            $total = max(0, $subtotal - $discount);
+            $pointsEarned = floor($total); // 1 point per $1 spent
+            
             // Create order
-            $stmt = $pdo->prepare("INSERT INTO orders (user_id, total_amount, delivery_address) VALUES (?, ?, ?)");
-            $stmt->execute([$_SESSION['user_id'], $total, $address]);
+            $stmt = $pdo->prepare("INSERT INTO orders (user_id, total_amount, delivery_address, phone) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$_SESSION['user_id'], $total, $address, $phone]);
             $orderId = $pdo->lastInsertId();
             
             // Create order items
@@ -48,9 +94,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->query("UPDATE products SET stock = stock - $qty WHERE id = $pid");
             }
             
+            // Update user points
+            $pdo->query("UPDATE users SET points = points - $pointsToDeduct + $pointsEarned WHERE id = {$_SESSION['user_id']}");
+            
             $pdo->commit();
             unset($_SESSION['cart']);
-            $success = "Order placed successfully! Your order number is #$orderId.";
+            $success = "Order placed successfully! You earned $pointsEarned reward points.";
         } catch (Exception $e) {
             $pdo->rollBack();
             $error = "Failed to place order. Please try again.";
@@ -70,7 +119,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <i class="fas fa-check-circle fa-3x mb-3 d-block"></i>
                         <h4 class="alert-heading">Success!</h4>
                         <p><?php echo $success; ?></p>
-                        <a href="index.php" class="btn btn-success mt-3">Return to Home</a>
+                        <a href="order_tracking.php?id=<?php echo $orderId; ?>" class="btn btn-info mt-3 mr-2 text-white font-weight-bold"><i class="fas fa-map-marker-alt mr-1"></i> Track Live GPS</a>
+                        <a href="invoice.php?id=<?php echo $orderId; ?>" class="btn btn-outline-primary mt-3 mr-2" target="_blank"><i class="fas fa-file-invoice mr-1"></i> Invoice</a>
+                        <a href="index.php" class="btn btn-success mt-3">Home</a>
                     </div>
                 <?php else: ?>
                     <?php if (isset($error)): ?>
@@ -78,18 +129,161 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php endif; ?>
                     
                     <form method="POST">
+                        <h4 class="font-weight-bold mb-3 border-bottom pb-2">Delivery Details</h4>
                         <div class="form-group">
-                            <label for="address" class="font-weight-bold">Delivery Address</label>
-                            <textarea name="address" id="address" rows="3" class="form-control" required placeholder="Enter your full delivery address..."></textarea>
+                            <label class="font-weight-bold">Street Address</label>
+                            <input type="text" name="street" class="form-control" required placeholder="123 Main Street">
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Apartment, suite, unit, etc. <span class="text-muted font-weight-normal">(optional)</span></label>
+                            <input type="text" name="apartment" class="form-control" placeholder="Apt 4B">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-5 form-group">
+                                <label class="font-weight-bold">City / Suburb</label>
+                                <input type="text" name="city" class="form-control" required placeholder="Sydney">
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label class="font-weight-bold">State</label>
+                                <select name="state" class="form-control" required>
+                                    <option value="">Choose...</option>
+                                    <option value="NSW">New South Wales</option>
+                                    <option value="VIC">Victoria</option>
+                                    <option value="QLD">Queensland</option>
+                                    <option value="SA">South Australia</option>
+                                    <option value="WA">Western Australia</option>
+                                    <option value="TAS">Tasmania</option>
+                                    <option value="NT">Northern Territory</option>
+                                    <option value="ACT">ACT</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label class="font-weight-bold">Postcode</label>
+                                <input type="text" name="postcode" class="form-control" required placeholder="2000" maxlength="4">
+                            </div>
+                        </div>
+                        <div class="form-group" id="phone-group">
+                            <label for="phone" class="font-weight-bold">Contact Phone Number</label>
+                            <div class="input-group">
+                                <input type="tel" name="phone" id="phone" class="form-control" required placeholder="e.g. 0412 345 678">
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-outline-primary" id="btn-send-otp" onclick="sendOTP()">Send OTP</button>
+                                </div>
+                            </div>
+                            <small class="text-muted" id="otp-hint" style="display: none;">Simulated OTP is: <strong>1234</strong></small>
                         </div>
                         
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle mr-2"></i> Payment simulation: In this prototype, payment is considered completed upon placing the order.
+                        <div class="form-group" id="otp-group" style="display: none;">
+                            <label for="otp" class="font-weight-bold">Enter OTP</label>
+                            <div class="input-group">
+                                <input type="text" id="otp" class="form-control" placeholder="4-digit code" maxlength="4">
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-success" onclick="verifyOTP()">Verify</button>
+                                </div>
+                            </div>
+                            <small class="text-danger" id="otp-error" style="display: none;">Invalid OTP.</small>
                         </div>
                         
-                        <div class="d-flex justify-content-between align-items-center mt-4">
-                            <a href="cart.php" class="text-muted"><i class="fas fa-arrow-left mr-1"></i> Back to Cart</a>
-                            <button type="submit" class="btn btn-primary btn-lg px-5">Place Order</button>
+                        <!-- Hidden input to track verification status -->
+                        <input type="hidden" name="phone_verified" id="phone_verified" value="0">
+                        <script>
+                            function sendOTP() {
+                                var phone = document.getElementById('phone').value;
+                                if(phone.length < 5) {
+                                    alert("Please enter a valid phone number first.");
+                                    return;
+                                }
+                                document.getElementById('btn-send-otp').innerText = "Sent!";
+                                document.getElementById('btn-send-otp').classList.replace('btn-outline-primary', 'btn-secondary');
+                                document.getElementById('otp-group').style.display = 'block';
+                                document.getElementById('otp-hint').style.display = 'block';
+                            }
+                            
+                            function verifyOTP() {
+                                var otp = document.getElementById('otp').value;
+                                if(otp === '1234') {
+                                    document.getElementById('phone_verified').value = '1';
+                                    document.getElementById('otp-group').innerHTML = '<div class="alert alert-success py-2 mb-0"><i class="fas fa-check-circle"></i> Phone verified successfully!</div>';
+                                    document.getElementById('phone').readOnly = true;
+                                    document.getElementById('btn-send-otp').style.display = 'none';
+                                    document.getElementById('otp-hint').style.display = 'none';
+                                } else {
+                                    document.getElementById('otp-error').style.display = 'block';
+                                }
+                            }
+                            
+                            // Prevent form submission if phone is not verified
+                            document.addEventListener('DOMContentLoaded', function() {
+                                document.querySelector('form').addEventListener('submit', function(e) {
+                                    if(document.getElementById('phone_verified').value === '0') {
+                                        e.preventDefault();
+                                        alert("Please verify your phone number with OTP before placing the order.");
+                                    }
+                                });
+                            });
+                        </script>
+                        
+                        <!-- Rewards Points -->
+                        <h4 class="font-weight-bold mb-3 mt-5 border-bottom pb-2">Rewards Points</h4>
+                        <?php if ($userPoints >= 100): ?>
+                            <?php 
+                                $maxDiscount = floor($userPoints / 100); 
+                                if ($maxDiscount > $cartSubtotal) $maxDiscount = floor($cartSubtotal);
+                            ?>
+                            <div class="alert alert-warning mb-0 border border-warning shadow-sm">
+                                <?php if ($maxDiscount > 0): ?>
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" id="use_points" name="use_points" value="1">
+                                        <label class="custom-control-label font-weight-bold" for="use_points" style="cursor: pointer;">
+                                            Use <?php echo $maxDiscount * 100; ?> Points for a $<?php echo $maxDiscount; ?> discount!
+                                        </label>
+                                    </div>
+                                <?php else: ?>
+                                    <p class="font-weight-bold mb-0">Order total too low to apply points discount.</p>
+                                <?php endif; ?>
+                                <small class="text-dark d-block mt-2"><i class="fas fa-coins text-warning"></i> You have <strong><?php echo $userPoints; ?></strong> total points. (100 points = $1 discount)</small>
+                            </div>
+                        <?php else: ?>
+                            <div class="alert alert-info mb-0 shadow-sm">
+                                <i class="fas fa-coins text-warning mr-2"></i> You have <strong><?php echo $userPoints; ?> points</strong>. Earn <?php echo floor($cartSubtotal); ?> more on this order! <br>
+                                <small>(100 points = $1 discount)</small>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <h4 class="font-weight-bold mb-3 mt-5 border-bottom pb-2">Payment Details</h4>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Name on Card</label>
+                            <input type="text" class="form-control" required placeholder="John Doe">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="font-weight-bold">Card Number</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" required placeholder="XXXX XXXX XXXX XXXX" pattern="\d{16}" title="Please enter 16 digits" maxlength="16">
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="fab fa-cc-visa text-primary mr-1"></i><i class="fab fa-cc-mastercard text-danger"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label class="font-weight-bold">Expiry Date</label>
+                                <input type="text" class="form-control" required placeholder="MM/YY" pattern="(0[1-9]|1[0-2])\/[0-9]{2}" title="Format: MM/YY" maxlength="5">
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label class="font-weight-bold">CVV</label>
+                                <input type="text" class="form-control" required placeholder="123" pattern="\d{3,4}" title="3 or 4 digit CVV" maxlength="4">
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-lock mr-2"></i> This is a secure 256-bit encrypted simulated payment gateway. Your details are safe.
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                            <a href="cart.php" class="text-muted font-weight-bold"><i class="fas fa-arrow-left mr-1"></i> Back to Cart</a>
+                            <button type="submit" class="btn btn-lg px-5 font-weight-bold text-dark shadow-sm" style="background-color: var(--secondary-color);">Pay & Place Order</button>
                         </div>
                     </form>
                 <?php endif; ?>
