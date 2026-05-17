@@ -250,35 +250,96 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         <?php endif; ?>
                         
-                        <h4 class="font-weight-bold mb-3 mt-5 border-bottom pb-2">Payment Details</h4>
-                        <div class="form-group">
-                            <label class="font-weight-bold">Name on Card</label>
-                            <input type="text" class="form-control" required placeholder="John Doe">
-                        </div>
+                        <h4 class="font-weight-bold mb-3 mt-5 border-bottom pb-2">Payment Method</h4>
                         
-                        <div class="form-group">
-                            <label class="font-weight-bold">Card Number</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" required placeholder="XXXX XXXX XXXX XXXX" pattern="\d{16}" title="Please enter 16 digits" maxlength="16">
-                                <div class="input-group-append">
-                                    <span class="input-group-text"><i class="fab fa-cc-visa text-primary mr-1"></i><i class="fab fa-cc-mastercard text-danger"></i></span>
+                        <!-- Payment Method Selector -->
+                        <div class="mb-4">
+                            <div class="custom-control custom-radio custom-control-inline">
+                                <input type="radio" id="pay_card" name="payment_method" class="custom-control-input" value="card" checked onchange="togglePaymentForm()">
+                                <label class="custom-control-label font-weight-bold" for="pay_card"><i class="fas fa-credit-card text-primary mr-1"></i> Credit Card</label>
+                            </div>
+                            <div class="custom-control custom-radio custom-control-inline">
+                                <input type="radio" id="pay_paypal" name="payment_method" class="custom-control-input" value="paypal" onchange="togglePaymentForm()">
+                                <label class="custom-control-label font-weight-bold" for="pay_paypal"><i class="fab fa-paypal text-info mr-1"></i> PayPal</label>
+                            </div>
+                            <div class="custom-control custom-radio custom-control-inline">
+                                <input type="radio" id="pay_esewa" name="payment_method" class="custom-control-input" value="esewa" onchange="togglePaymentForm()">
+                                <label class="custom-control-label font-weight-bold text-success" for="pay_esewa"><i class="fas fa-wallet mr-1"></i> e-Sewa</label>
+                            </div>
+                        </div>
+
+                        <!-- Credit Card Form -->
+                        <div id="card_form">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Name on Card</label>
+                                <input type="text" class="form-control payment-input" required placeholder="John Doe">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="font-weight-bold">Card Number</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control payment-input" required placeholder="XXXX XXXX XXXX XXXX" pattern="\d{16}" title="Please enter 16 digits" maxlength="16">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="fab fa-cc-visa text-primary mr-1"></i><i class="fab fa-cc-mastercard text-danger"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label class="font-weight-bold">Expiry Date</label>
+                                    <input type="text" class="form-control payment-input" required placeholder="MM/YY" pattern="(0[1-9]|1[0-2])\/[0-9]{2}" title="Format: MM/YY" maxlength="5">
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label class="font-weight-bold">CVV</label>
+                                    <input type="text" class="form-control payment-input" required placeholder="123" pattern="\d{3,4}" title="3 or 4 digit CVV" maxlength="4">
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 form-group">
-                                <label class="font-weight-bold">Expiry Date</label>
-                                <input type="text" class="form-control" required placeholder="MM/YY" pattern="(0[1-9]|1[0-2])\/[0-9]{2}" title="Format: MM/YY" maxlength="5">
-                            </div>
-                            <div class="col-md-6 form-group">
-                                <label class="font-weight-bold">CVV</label>
-                                <input type="text" class="form-control" required placeholder="123" pattern="\d{3,4}" title="3 or 4 digit CVV" maxlength="4">
+
+                        <!-- PayPal Info -->
+                        <div id="paypal_form" style="display: none;">
+                            <div class="alert alert-info border-info text-center py-4">
+                                <i class="fab fa-paypal fa-3x text-info mb-3"></i>
+                                <h5>Pay securely with PayPal</h5>
+                                <p class="mb-0 text-muted">You will be redirected to PayPal's secure server to complete your payment.</p>
                             </div>
                         </div>
+
+                        <!-- e-Sewa Info -->
+                        <div id="esewa_form" style="display: none;">
+                            <div class="alert alert-success border-success text-center py-4">
+                                <i class="fas fa-wallet fa-3x text-success mb-3"></i>
+                                <h5>Pay with e-Sewa</h5>
+                                <p class="mb-0 text-muted">You will be redirected to the e-Sewa portal to complete your transaction.</p>
+                            </div>
+                        </div>
+
+                        <script>
+                            function togglePaymentForm() {
+                                const method = document.querySelector('input[name="payment_method"]:checked').value;
+                                
+                                document.getElementById('card_form').style.display = 'none';
+                                document.getElementById('paypal_form').style.display = 'none';
+                                document.getElementById('esewa_form').style.display = 'none';
+                                
+                                // Disable required attribute on card inputs if not using card so form can submit
+                                const cardInputs = document.querySelectorAll('.payment-input');
+                                cardInputs.forEach(input => input.required = false);
+
+                                if (method === 'card') {
+                                    document.getElementById('card_form').style.display = 'block';
+                                    cardInputs.forEach(input => input.required = true);
+                                } else if (method === 'paypal') {
+                                    document.getElementById('paypal_form').style.display = 'block';
+                                } else if (method === 'esewa') {
+                                    document.getElementById('esewa_form').style.display = 'block';
+                                }
+                            }
+                        </script>
                         
-                        <div class="alert alert-info mt-3">
-                            <i class="fas fa-lock mr-2"></i> This is a secure 256-bit encrypted simulated payment gateway. Your details are safe.
+                        <div class="alert alert-info mt-3 shadow-sm border-info">
+                            <i class="fas fa-shield-alt mr-2"></i> This is a secure 256-bit encrypted simulated payment gateway. Your details are safe.
                         </div>
                         
                         <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
