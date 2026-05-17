@@ -24,10 +24,22 @@
             </div>
             <div class="col-md-4">
                 <h5 class="font-weight-bold mb-4" style="color: var(--secondary-color);">Contact Us</h5>
-                <ul class="list-unstyled text-light small">
-                    <li class="mb-2"><i class="fas fa-map-marker-alt mr-2"></i> 2 pitt street, NSW 2000</li>
-                    <li class="mb-2"><i class="fas fa-phone mr-2"></i> +61 2 1234 5678</li>
-                    <li class="mb-2"><i class="fas fa-envelope mr-2"></i> support@moonlightgrocery.com</li>
+                <ul class="list-unstyled text-light small contact-links">
+                    <li class="mb-2">
+                        <a href="https://www.google.com/maps/search/?api=1&query=2+pitt+street,+NSW+2000" target="_blank" class="text-light text-decoration-none hover-yellow">
+                            <i class="fas fa-map-marker-alt mr-2"></i> 2 pitt street, NSW 2000
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="tel:+61212345678" class="text-light text-decoration-none hover-yellow">
+                            <i class="fas fa-phone mr-2"></i> +61 2 1234 5678
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="mailto:support@moonlightgrocery.com" class="text-light text-decoration-none hover-yellow">
+                            <i class="fas fa-envelope mr-2"></i> support@moonlightgrocery.com
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
