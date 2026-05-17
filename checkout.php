@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="alert alert-danger"><?php echo $error; ?></div>
                     <?php endif; ?>
                     
-                    <form method="POST">
+                    <form method="POST" id="checkout-form">
                         <h4 class="font-weight-bold mb-3 border-bottom pb-2">Delivery Details</h4>
                         <div class="form-group">
                             <label class="font-weight-bold">Street Address</label>
@@ -302,7 +302,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="alert alert-info border-info text-center py-4">
                                 <i class="fab fa-paypal fa-3x text-info mb-3"></i>
                                 <h5>Pay securely with PayPal</h5>
-                                <p class="mb-0 text-muted">You will be redirected to PayPal's secure server to complete your payment.</p>
+                                <div id="paypal-button-container" class="mt-3 w-100" style="max-width: 400px; margin: 0 auto;"></div>
                             </div>
                         </div>
 
@@ -315,7 +315,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
 
+                        <!-- PayPal SDK Integration -->
+                        <script src="https://www.paypal.com/sdk/js?client-id=ATpAzKtTFjPjnTCxz8qLpkYDiuw0nXbBMj_2a6PkzGDzA-DNCBBKWL3rAeZ4dBiwEsCG_xvcbhiPXmrv&currency=AUD"></script>
                         <script>
+                            // Handle Dynamic Total based on Points Checkbox
+                            let baseTotal = <?php echo $cartSubtotal; ?>;
+                            let maxDiscount = <?php echo isset($maxDiscount) ? $maxDiscount : 0; ?>;
+                            let finalAmount = baseTotal;
+
+                            const pointsCheckbox = document.getElementById('use_points');
+                            if (pointsCheckbox) {
+                                pointsCheckbox.addEventListener('change', function() {
+                                    if (this.checked) {
+                                        finalAmount = Math.max(0, baseTotal - maxDiscount);
+                                    } else {
+                                        finalAmount = baseTotal;
+                                    }
+                                });
+                            }
+
+                            // Initialize PayPal Buttons
+                            paypal.Buttons({
+                                createOrder: function(data, actions) {
+                                    // Validate form before opening PayPal
+                                    if(document.getElementById('phone_verified').value === '0') {
+                                        alert('Please verify your phone number with OTP first.');
+                                        return actions.reject();
+                                    }
+                                    if(!document.querySelector('input[name="street"]').value || !document.querySelector('input[name="city"]').value) {
+                                        alert('Please fill in your complete delivery address first.');
+                                        return actions.reject();
+                                    }
+                                    
+                                    return actions.order.create({
+                                        purchase_units: [{
+                                            amount: {
+                                                value: finalAmount.toFixed(2)
+                                            }
+                                        }]
+                                    });
+                                },
+                                onApprove: function(data, actions) {
+                                    return actions.order.capture().then(function(details) {
+                                        // Payment Successful! Submit the form to create the database record
+                                        let input = document.createElement('input');
+                                        input.type = 'hidden';
+                                        input.name = 'paypal_transaction_id';
+                                        input.value = details.id;
+                                        document.getElementById('checkout-form').appendChild(input);
+                                        
+                                        document.getElementById('checkout-form').submit();
+                                    });
+                                }
+                            }).render('#paypal-button-container');
+
                             function togglePaymentForm() {
                                 const method = document.querySelector('input[name="payment_method"]:checked').value;
                                 
@@ -323,7 +376,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 document.getElementById('paypal_form').style.display = 'none';
                                 document.getElementById('esewa_form').style.display = 'none';
                                 
-                                // Disable required attribute on card inputs if not using card so form can submit
+                                // Hide the standard Submit button if using PayPal (since PayPal has its own buttons)
+                                document.getElementById('main-submit-btn').style.display = (method === 'paypal') ? 'none' : 'block';
+                                
+                                // Disable required attributes on card inputs if not using card so the form can submit
                                 const cardInputs = document.querySelectorAll('.payment-input');
                                 cardInputs.forEach(input => input.required = false);
 
@@ -336,6 +392,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     document.getElementById('esewa_form').style.display = 'block';
                                 }
                             }
+                            
+                            // Initialize on load
+                            document.addEventListener("DOMContentLoaded", function() {
+                                togglePaymentForm();
+                            });
                         </script>
                         
                         <div class="alert alert-info mt-3 shadow-sm border-info">
@@ -344,7 +405,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         
                         <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
                             <a href="cart.php" class="text-muted font-weight-bold"><i class="fas fa-arrow-left mr-1"></i> Back to Cart</a>
-                            <button type="submit" class="btn btn-lg px-5 font-weight-bold text-dark shadow-sm" style="background-color: var(--secondary-color);">Pay & Place Order</button>
+                            <button type="submit" id="main-submit-btn" class="btn btn-lg px-5 font-weight-bold text-dark shadow-sm" style="background-color: var(--secondary-color);">Pay & Place Order</button>
                         </div>
                     </form>
                 <?php endif; ?>
