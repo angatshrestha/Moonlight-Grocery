@@ -96,7 +96,7 @@ $categories = $pdo->query("SELECT * FROM categories")->fetchAll();
     </div>
 <?php endif; ?>
 
-<div class="card shadow-sm border-0">
+<div class="card shadow-sm border-0 no-hover">
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover mb-0 align-middle">

@@ -59,6 +59,15 @@ body {
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
 
+/* Prevent layout flickering: Disable hover translate on structural panels, modals, and tables */
+.card.no-hover:hover,
+.card:has(table):hover,
+.card:has(.table):hover,
+.modal-content:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
 .card-img-top {
     height: 200px;
     object-fit: contain;
