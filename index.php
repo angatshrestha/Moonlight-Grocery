@@ -140,11 +140,11 @@ $dailyOffers = $offerStmt->fetchAll();
                             <span class="badge badge-warning text-dark mb-3 align-self-start px-3 py-2 font-weight-bold" style="border-radius: 30px; letter-spacing: 0.5px; font-size: 0.8rem;">
                                 <i class="fas fa-percentage mr-1"></i> SPECIAL OFFER
                             </span>
-                            <h2 class="font-weight-bold text-white mb-3" style="font-size: 2rem; line-height: 1.2;"><?php echo htmlspecialchars($offer->name); ?></h2>
-                            <p class="text-light mb-4 d-none d-md-block" style="font-size: 0.95rem; opacity: 0.9; line-height: 1.6;"><?php echo htmlspecialchars($offer->description); ?></p>
+                            <h2 class="font-weight-bold mb-3" style="font-size: 2rem; line-height: 1.2;"><?php echo htmlspecialchars($offer->name); ?></h2>
+                            <p class="mb-4 d-none d-md-block" style="font-size: 0.95rem; opacity: 0.9; line-height: 1.6;"><?php echo htmlspecialchars($offer->description); ?></p>
                             <div class="d-flex align-items-center mb-4">
-                                <span class="h2 font-weight-bold text-warning mb-0 mr-3">$<?php echo number_format($offer->price, 2); ?></span>
-                                <span class="badge badge-outline-light text-white border border-light px-2 py-1 small" style="opacity: 0.8;">Fresh Daily</span>
+                                <span class="h2 font-weight-bold text-primary mb-0 mr-3">$<?php echo number_format($offer->price, 2); ?></span>
+                                <span class="badge badge-outline-dark text-dark border border-dark px-2 py-1 small" style="opacity: 0.8;">Fresh Daily</span>
                             </div>
                             <form action="cart_action.php" method="POST" class="d-inline">
                                 <input type="hidden" name="action" value="add">

@@ -204,63 +204,94 @@ body {
     border-bottom-left-radius: 4px;
 }
 
-/* Daily Offers Carousel - Redesigned Premium Style */
-.offers-carousel {
-    overflow: hidden;
-    margin-bottom: 4rem;
-    border-radius: 24px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    background: #1e0b3b;
+/* Top Woolworths Carousel Styles - Consistent Height */
+.woolworths-banner {
+    height: 400px;
+    display: flex;
 }
 
-.offers-slide {
-    min-height: 420px;
-    height: 100%;
-}
-
-.offers-content-panel {
+.woolworths-banner .banner-content {
     width: 45%;
-    background: linear-gradient(135deg, #2d1457 0%, #1e0b3b 100%);
-    color: white;
-    z-index: 2;
-    position: relative;
+    padding: 3rem !important;
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
 
-/* Add a beautiful glowing edge/divider between panels */
-.offers-content-panel::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: -15px;
-    height: 100%;
-    width: 30px;
-    background: linear-gradient(to right, #1e0b3b 0%, transparent 100%);
-    z-index: 1;
-    pointer-events: none;
-}
-
-.offers-image-panel {
+.woolworths-banner .banner-image {
     width: 55%;
-    position: relative;
+    height: 100%;
     overflow: hidden;
 }
 
-.offers-image-panel img {
+.woolworths-banner .banner-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: center;
-    transition: transform 6s ease-in-out;
+}
+
+/* Bottom Daily Offers Carousel - Redesigned Floating Premium Style */
+.offers-carousel {
+    overflow: hidden;
+    margin-bottom: 4rem;
+    border-radius: 24px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+    height: 400px;
+}
+
+.offers-slide {
+    height: 400px;
+    display: flex;
+}
+
+.offers-content-panel {
+    width: 50%;
+    padding: 3rem !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: var(--text-color);
+}
+
+.offers-content-panel h2 {
+    color: #2d1457 !important;
+    font-weight: 700;
+    font-size: 2rem;
+}
+
+.offers-content-panel p {
+    color: #4b5563 !important;
+    font-size: 0.95rem;
+}
+
+.offers-image-panel {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem;
+    background: transparent;
+}
+
+.offers-image-panel img {
+    max-width: 90%;
+    max-height: 290px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(45, 20, 87, 0.12);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .carousel-item.active .offers-image-panel img {
-    transform: scale(1.05);
+    transform: scale(1.03);
 }
 
-/* Custom Indicators */
+/* Custom Indicators for light background */
 .carousel-indicators {
     bottom: 20px;
     z-index: 15;
@@ -271,7 +302,7 @@ body {
     height: 12px;
     border-radius: 50%;
     margin: 0 6px;
-    background-color: rgba(255, 255, 255, 0.4);
+    background-color: rgba(45, 20, 87, 0.2);
     border: 2px solid transparent;
     transition: all 0.3s ease;
 }
@@ -279,26 +310,30 @@ body {
 .carousel-indicators .active {
     width: 30px;
     border-radius: 10px;
-    background-color: #ffc107;
-    box-shadow: 0 0 10px rgba(255, 193, 7, 0.8);
+    background-color: #2d1457;
+    box-shadow: 0 0 10px rgba(45, 20, 87, 0.4);
 }
 
-/* Responsive mobile stack */
+/* Responsive mobile stack for both carousels */
 @media (max-width: 768px) {
-    .offers-slide {
+    .woolworths-banner, .offers-slide, .offers-carousel {
+        height: auto !important;
         min-height: auto;
+        flex-direction: column;
     }
-    .offers-content-panel {
-        width: 100%;
-        order: 2;
-        padding: 2.5rem 1.5rem !important;
+    
+    .woolworths-banner .banner-content, .offers-content-panel {
+        width: 100% !important;
+        padding: 2rem 1.5rem !important;
     }
-    .offers-image-panel {
-        width: 100%;
-        height: 250px;
-        order: 1;
+    
+    .woolworths-banner .banner-image, .offers-image-panel {
+        width: 100% !important;
+        height: 250px !important;
+        padding: 1.5rem !important;
     }
-    .offers-content-panel::after {
-        display: none;
+    
+    .offers-image-panel img {
+        max-height: 200px;
     }
 }
