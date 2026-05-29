@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $phone = trim($_POST['phone'] ?? '');
 
-if (empty($phone) || strlen($phone) < 8) {
+if (empty($phone) || strlen($phone) < 5) {
     echo json_encode(['success' => false, 'message' => 'Please enter a valid phone number.']);
     exit;
 }

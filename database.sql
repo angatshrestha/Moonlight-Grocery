@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     role ENUM('customer', 'admin') DEFAULT 'customer',
+    points INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -32,6 +33,7 @@ CREATE TABLE IF NOT EXISTS products (
 CREATE TABLE IF NOT EXISTS orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
+    driver_id INT NULL,
     total_amount DECIMAL(10, 2) NOT NULL,
     tax_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     delivery_fee DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
@@ -40,8 +42,10 @@ CREATE TABLE IF NOT EXISTS orders (
     transaction_id VARCHAR(100) NULL,
     payment_status ENUM('unpaid', 'paid', 'refunded') DEFAULT 'unpaid',
     delivery_address TEXT NOT NULL,
+    phone VARCHAR(50) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (driver_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS order_items (
