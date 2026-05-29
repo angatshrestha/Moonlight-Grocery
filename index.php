@@ -35,8 +35,8 @@ $dailyOffers = $offerStmt->fetchAll();
                                             </form>
                                         </div>
                                     </div>
-                                    <div class="banner-image position-relative" style="width: 55%; min-height: 400px;">
-                                        <img src="<?php echo htmlspecialchars($offer->image_url); ?>" alt="<?php echo htmlspecialchars($offer->name); ?>" style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
+                                    <div class="banner-image">
+                                        <img src="<?php echo htmlspecialchars($offer->image_url); ?>" alt="<?php echo htmlspecialchars($offer->name); ?>">
                                     </div>
                                 </div>
                             </div>
