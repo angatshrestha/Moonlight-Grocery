@@ -134,18 +134,27 @@ $dailyOffers = $offerStmt->fetchAll();
         <div class="carousel-inner rounded">
             <?php foreach($dailyOffers as $index => $offer): ?>
                 <div class="carousel-item <?php echo $index === 0 ? 'active' : ''; ?>">
-                    <img src="<?php echo htmlspecialchars($offer->image_url); ?>" class="d-block w-100 carousel-img" alt="<?php echo htmlspecialchars($offer->name); ?>">
-                    <div class="carousel-caption d-flex flex-column justify-content-center align-items-center h-100 offers-caption-wrapper">
-                        <div class="caption-content glass-card p-5 text-center">
-                            <span class="badge badge-danger mb-2 p-2" style="font-size: 1rem;"><i class="fas fa-tag mr-1"></i> Special Offer</span>
-                            <h3 class="font-weight-bold text-white"><?php echo htmlspecialchars($offer->name); ?></h3>
-                            <p class="lead text-light d-none d-md-block"><?php echo htmlspecialchars($offer->description); ?></p>
-                            <h4 class="font-weight-bold text-warning mb-3">$<?php echo number_format($offer->price, 2); ?></h4>
+                    <div class="offers-slide d-flex flex-column flex-md-row">
+                        <!-- Left Side: Content Panel -->
+                        <div class="offers-content-panel p-4 p-md-5">
+                            <span class="badge badge-warning text-dark mb-3 align-self-start px-3 py-2 font-weight-bold" style="border-radius: 30px; letter-spacing: 0.5px; font-size: 0.8rem;">
+                                <i class="fas fa-percentage mr-1"></i> SPECIAL OFFER
+                            </span>
+                            <h2 class="font-weight-bold text-white mb-3" style="font-size: 2rem; line-height: 1.2;"><?php echo htmlspecialchars($offer->name); ?></h2>
+                            <p class="text-light mb-4 d-none d-md-block" style="font-size: 0.95rem; opacity: 0.9; line-height: 1.6;"><?php echo htmlspecialchars($offer->description); ?></p>
+                            <div class="d-flex align-items-center mb-4">
+                                <span class="h2 font-weight-bold text-warning mb-0 mr-3">$<?php echo number_format($offer->price, 2); ?></span>
+                                <span class="badge badge-outline-light text-white border border-light px-2 py-1 small" style="opacity: 0.8;">Fresh Daily</span>
+                            </div>
                             <form action="cart_action.php" method="POST" class="d-inline">
                                 <input type="hidden" name="action" value="add">
                                 <input type="hidden" name="product_id" value="<?php echo $offer->id; ?>">
-                                <button type="submit" class="btn btn-primary btn-lg shadow-sm"><i class="fas fa-cart-plus mr-2"></i> Add to Cart</button>
+                                <button type="submit" class="btn btn-warning text-dark font-weight-bold px-4 py-2 shadow-sm" style="border-radius: 30px;"><i class="fas fa-cart-plus mr-2"></i> Add to Cart</button>
                             </form>
+                        </div>
+                        <!-- Right Side: Image Panel -->
+                        <div class="offers-image-panel">
+                            <img src="<?php echo htmlspecialchars($offer->image_url); ?>" alt="<?php echo htmlspecialchars($offer->name); ?>">
                         </div>
                     </div>
                 </div>

@@ -204,47 +204,66 @@ body {
     border-bottom-left-radius: 4px;
 }
 
-/* Daily Offers Carousel - Premium Design */
+/* Daily Offers Carousel - Redesigned Premium Style */
 .offers-carousel {
     overflow: hidden;
     margin-bottom: 4rem;
-    border-radius: 20px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-}
-
-.carousel-img {
-    height: 500px;
-    object-fit: cover;
-    transform: scale(1.05);
-    transition: transform 10s ease-in-out;
-}
-
-.carousel-item.active .carousel-img {
-    transform: scale(1);
-}
-
-.offers-caption-wrapper {
-    bottom: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0) 100%);
-}
-
-.glass-card {
-    background: rgba(15, 23, 42, 0.75);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 24px;
-    max-width: 650px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    opacity: 0;
-    transform: translateY(30px);
-    padding: 3.5rem !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    background: #1e0b3b;
+}
+
+.offers-slide {
+    min-height: 420px;
+    height: 100%;
+}
+
+.offers-content-panel {
+    width: 45%;
+    background: linear-gradient(135deg, #2d1457 0%, #1e0b3b 100%);
+    color: white;
+    z-index: 2;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Add a beautiful glowing edge/divider between panels */
+.offers-content-panel::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -15px;
+    height: 100%;
+    width: 30px;
+    background: linear-gradient(to right, #1e0b3b 0%, transparent 100%);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.offers-image-panel {
+    width: 55%;
+    position: relative;
+    overflow: hidden;
+}
+
+.offers-image-panel img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 6s ease-in-out;
+}
+
+.carousel-item.active .offers-image-panel img {
+    transform: scale(1.05);
 }
 
 /* Custom Indicators */
 .carousel-indicators {
     bottom: 20px;
+    z-index: 15;
 }
 
 .carousel-indicators li {
@@ -252,7 +271,7 @@ body {
     height: 12px;
     border-radius: 50%;
     margin: 0 6px;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.4);
     border: 2px solid transparent;
     transition: all 0.3s ease;
 }
@@ -260,37 +279,26 @@ body {
 .carousel-indicators .active {
     width: 30px;
     border-radius: 10px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(255,255,255,0.8);
+    background-color: #ffc107;
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.8);
 }
 
-/* Custom Carousel Buttons */
-.offers-caption-wrapper .btn-primary {
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-    border: none;
-    border-radius: 30px;
-    padding: 0.75rem 2rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    font-size: 0.9rem;
-    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);
-    transition: all 0.3s ease;
-}
-
-.offers-caption-wrapper .btn-primary:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.5);
-    background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
-}
-
-.text-shadow {
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-}
-
-@keyframes fadeInUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
+/* Responsive mobile stack */
+@media (max-width: 768px) {
+    .offers-slide {
+        min-height: auto;
+    }
+    .offers-content-panel {
+        width: 100%;
+        order: 2;
+        padding: 2.5rem 1.5rem !important;
+    }
+    .offers-image-panel {
+        width: 100%;
+        height: 250px;
+        order: 1;
+    }
+    .offers-content-panel::after {
+        display: none;
     }
 }
