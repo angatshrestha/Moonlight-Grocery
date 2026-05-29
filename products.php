@@ -90,7 +90,7 @@ $products = $stmt->fetchAll();
                             <?php if(isset($product->is_offer) && $product->is_offer == 1): ?>
                                 <span class="badge badge-danger position-absolute" style="top: 10px; right: 10px; z-index: 10;">Offer</span>
                             <?php endif; ?>
-                            <img src="<?php echo htmlspecialchars($product->image_url); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($product->name); ?>">
+                            <img src="<?php echo htmlspecialchars($product->image_url); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($product->name); ?>" style="height: 200px; object-fit: cover;">
                         </div>
                         <div class="card-body d-flex flex-column p-3">
                             <small class="text-primary font-weight-bold mb-1"><?php echo htmlspecialchars($product->category_name); ?></small>

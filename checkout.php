@@ -43,10 +43,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $address = implode(', ', $addressParts);
     
     $phone = $_POST['phone'] ?? '';
+    $verified = $_POST['phone_verified'] ?? '0';
     $use_points = isset($_POST['use_points']) ? true : false;
     
     if (empty($street) || empty($city) || empty($phone)) {
         $error = "Delivery address and phone number are required.";
+    } elseif ($verified !== '1') {
+        $error = "Please verify your phone number via OTP.";
     } else {
         try {
             $pdo->beginTransaction();
@@ -76,58 +79,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $total = max(0, $subtotal - $discount);
             $pointsEarned = floor($total); // 1 point per $1 spent
-            $tax_amount = round($total * 0.10, 2); // 10% tax
-            $payment_method = $_POST['payment_method'] ?? 'card';
-            $transaction_id = 'ch_' . substr(md5(uniqid(rand(), true)), 0, 16);
-            if ($payment_method === 'paypal' && !empty($_POST['paypal_transaction_id'])) {
-                $transaction_id = $_POST['paypal_transaction_id'];
-            }
-            $payment_status = 'paid';
             
-            // Create order with tax, payment method, status, and transaction tracking (defensive fallback enabled)
-            try {
-                $stmt = $pdo->prepare("INSERT INTO orders (user_id, total_amount, tax_amount, delivery_fee, status, payment_method, transaction_id, payment_status, delivery_address, phone) VALUES (?, ?, ?, 0.00, 'confirmed', ?, ?, ?, ?, ?)");
-                $stmt->execute([$_SESSION['user_id'], $total, $tax_amount, $payment_method, $transaction_id, $payment_status, $address, $phone]);
-            } catch (PDOException $e) {
-                // Fallback: If newer database columns do not exist in users' custom database, execute base order insert
-                $stmt = $pdo->prepare("INSERT INTO orders (user_id, total_amount, delivery_address) VALUES (?, ?, ?)");
-                $stmt->execute([$_SESSION['user_id'], $total, $address]);
-            }
+            // Create order
+            $stmt = $pdo->prepare("INSERT INTO orders (user_id, total_amount, delivery_address, phone) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$_SESSION['user_id'], $total, $address, $phone]);
             $orderId = $pdo->lastInsertId();
             
-            // Create order items with stock verification
+            // Create order items
             $stmt = $pdo->prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
             foreach ($cartItems as $pid => $qty) {
-                // Verify available stock inside transaction
-                $stockCheck = $pdo->prepare("SELECT stock, name FROM products WHERE id = ? FOR UPDATE");
-                $stockCheck->execute([$pid]);
-                $prod = $stockCheck->fetch();
-                if (!$prod || $prod->stock < $qty) {
-                    throw new Exception("Sorry, " . ($prod ? $prod->name : "Product") . " does not have enough stock available to complete your order.");
-                }
-
                 $stmt->execute([$orderId, $pid, $qty, $productPrices[$pid]]);
                 
-                // Decrement product stock
-                $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?")->execute([$qty, $pid]);
+                // Update stock
+                $pdo->query("UPDATE products SET stock = stock - $qty WHERE id = $pid");
             }
             
-            // Update user points (defensive fallback enabled)
-            try {
-                $pdo->query("UPDATE users SET points = points - $pointsToDeduct + $pointsEarned WHERE id = {$_SESSION['user_id']}");
-            } catch (PDOException $e) {
-                // Fallback: Ignore points updating if the column is absent
-            }
+            // Update user points
+            $pdo->query("UPDATE users SET points = points - $pointsToDeduct + $pointsEarned WHERE id = {$_SESSION['user_id']}");
             
             $pdo->commit();
             unset($_SESSION['cart']);
-            unset($_SESSION['otp_code']);
-            unset($_SESSION['otp_expiry']);
-            unset($_SESSION['otp_verified']);
             $success = "Order placed successfully! You earned $pointsEarned reward points.";
         } catch (Exception $e) {
             $pdo->rollBack();
-            $error = $e->getMessage() ?: "Failed to place order. Please try again.";
+            $error = "Failed to place order. Please try again.";
         }
     }
 }
@@ -189,8 +164,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         <div class="form-group" id="phone-group">
                             <label for="phone" class="font-weight-bold">Contact Phone Number</label>
-                            <input type="tel" name="phone" id="phone" class="form-control" required placeholder="e.g. 0412 345 678">
+                            <div class="input-group">
+                                <input type="tel" name="phone" id="phone" class="form-control" required placeholder="e.g. 0412 345 678">
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-outline-primary" id="btn-send-otp" onclick="sendOTP()">Send OTP</button>
+                                </div>
+                            </div>
+                            <small class="text-muted" id="otp-hint" style="display: none;">Simulated OTP is: <strong>1234</strong></small>
                         </div>
+                        
+                        <div class="form-group" id="otp-group" style="display: none;">
+                            <label for="otp" class="font-weight-bold">Enter OTP</label>
+                            <div class="input-group">
+                                <input type="text" id="otp" class="form-control" placeholder="4-digit code" maxlength="4">
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-success" onclick="verifyOTP()">Verify</button>
+                                </div>
+                            </div>
+                            <small class="text-danger" id="otp-error" style="display: none;">Invalid OTP.</small>
+                        </div>
+                        
+                        <!-- Hidden input to track verification status -->
+                        <input type="hidden" name="phone_verified" id="phone_verified" value="0">
+                        <script>
+                            function sendOTP() {
+                                var phone = document.getElementById('phone').value;
+                                if(phone.length < 5) {
+                                    alert("Please enter a valid phone number first.");
+                                    return;
+                                }
+                                document.getElementById('btn-send-otp').innerText = "Sent!";
+                                document.getElementById('btn-send-otp').classList.replace('btn-outline-primary', 'btn-secondary');
+                                document.getElementById('otp-group').style.display = 'block';
+                                document.getElementById('otp-hint').style.display = 'block';
+                            }
+                            
+                            function verifyOTP() {
+                                var otp = document.getElementById('otp').value;
+                                if(otp === '1234') {
+                                    document.getElementById('phone_verified').value = '1';
+                                    document.getElementById('otp-group').innerHTML = '<div class="alert alert-success py-2 mb-0"><i class="fas fa-check-circle"></i> Phone verified successfully!</div>';
+                                    document.getElementById('phone').readOnly = true;
+                                    document.getElementById('btn-send-otp').style.display = 'none';
+                                    document.getElementById('otp-hint').style.display = 'none';
+                                } else {
+                                    document.getElementById('otp-error').style.display = 'block';
+                                }
+                            }
+                            
+                            // Prevent form submission if phone is not verified
+                            document.addEventListener('DOMContentLoaded', function() {
+                                document.querySelector('form').addEventListener('submit', function(e) {
+                                    if(document.getElementById('phone_verified').value === '0') {
+                                        e.preventDefault();
+                                        alert("Please verify your phone number with OTP before placing the order.");
+                                    }
+                                });
+                            });
+                        </script>
                         
                         <!-- Rewards Points -->
                         <h4 class="font-weight-bold mb-3 mt-5 border-bottom pb-2">Rewards Points</h4>
@@ -247,7 +278,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="form-group">
                                 <label class="font-weight-bold">Card Number</label>
                                 <div class="input-group">
-                                    <input type="text" class="form-control payment-input" required placeholder="XXXX XXXX XXXX XXXX" pattern="[0-9 ]{19}" title="Please enter a 16-digit card number" maxlength="19">
+                                    <input type="text" class="form-control payment-input" required placeholder="XXXX XXXX XXXX XXXX" pattern="\d{16}" title="Please enter 16 digits" maxlength="16">
                                     <div class="input-group-append">
                                         <span class="input-group-text"><i class="fab fa-cc-visa text-primary mr-1"></i><i class="fab fa-cc-mastercard text-danger"></i></span>
                                     </div>
@@ -362,42 +393,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 }
                             }
                             
-                            // Card formatting input masks
-                            document.addEventListener('DOMContentLoaded', function() {
-                                const cardNumberInput = document.querySelector('input[placeholder="XXXX XXXX XXXX XXXX"]');
-                                const expiryInput = document.querySelector('input[placeholder="MM/YY"]');
-                                const cvvInput = document.querySelector('input[placeholder="123"]');
-                                
-                                if(cardNumberInput) {
-                                    cardNumberInput.addEventListener('input', function(e) {
-                                        let val = this.value.replace(/\D/g, '');
-                                        let formatted = '';
-                                        for(let i=0; i<val.length; i++) {
-                                            if(i > 0 && i % 4 === 0) formatted += ' ';
-                                            formatted += val[i];
-                                        }
-                                        this.value = formatted.substring(0, 19); // 16 digits + 3 spaces
-                                    });
-                                }
-                                
-                                if(expiryInput) {
-                                    expiryInput.addEventListener('input', function(e) {
-                                        let val = this.value.replace(/\D/g, '');
-                                        if(val.length > 2) {
-                                            this.value = val.substring(0, 2) + '/' + val.substring(2, 4);
-                                        } else {
-                                            this.value = val;
-                                        }
-                                    });
-                                }
-                                
-                                if(cvvInput) {
-                                    cvvInput.addEventListener('input', function(e) {
-                                        this.value = this.value.replace(/\D/g, '').substring(0, 4);
-                                    });
-                                }
-                            });
-
                             // Initialize on load
                             document.addEventListener("DOMContentLoaded", function() {
                                 togglePaymentForm();

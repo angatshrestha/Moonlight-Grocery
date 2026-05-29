@@ -6,7 +6,7 @@
         <div class="row">
             <div class="col-md-4 mb-4 mb-md-0">
                 <h5 class="font-weight-bold mb-4" style="color: var(--secondary-color);"><i class="fas fa-shopping-basket mr-2"></i>Moonlight Grocery</h5>
-                <p class="text-light small"><?php echo __('Delivering the freshest organic produce and daily essentials right to your doorstep since 2026. Quality you can trust.'); ?></p>
+                <p class="text-light small">Delivering the freshest organic produce and daily essentials right to your doorstep since 2026. Quality you can trust.</p>
                 <div class="social-icons mt-4">
                     <a href="#" class="text-light mr-3"><i class="fab fa-facebook-f fa-lg"></i></a>
                     <a href="#" class="text-light mr-3"><i class="fab fa-twitter fa-lg"></i></a>
@@ -14,16 +14,16 @@
                 </div>
             </div>
             <div class="col-md-4 mb-4 mb-md-0">
-                <h5 class="font-weight-bold mb-4" style="color: var(--secondary-color);"><?php echo __('Quick Links'); ?></h5>
+                <h5 class="font-weight-bold mb-4" style="color: var(--secondary-color);">Quick Links</h5>
                 <ul class="list-unstyled">
-                    <li class="mb-2"><a href="<?php echo BASE_URL; ?>products.php" class="text-light text-decoration-none hover-yellow"><?php echo __('Shop All'); ?></a></li>
-                    <li class="mb-2"><a href="<?php echo BASE_URL; ?>products.php?offer=1" class="text-light text-decoration-none hover-yellow"><?php echo __('Specials & Offers'); ?></a></li>
-                    <li class="mb-2"><a href="<?php echo BASE_URL; ?>login.php" class="text-light text-decoration-none hover-yellow"><?php echo __('Your Account'); ?></a></li>
-                    <li class="mb-2"><a href="<?php echo BASE_URL; ?>cart.php" class="text-light text-decoration-none hover-yellow"><?php echo __('Shopping Cart'); ?></a></li>
+                    <li class="mb-2"><a href="<?php echo BASE_URL; ?>products.php" class="text-light text-decoration-none hover-yellow">Shop All</a></li>
+                    <li class="mb-2"><a href="<?php echo BASE_URL; ?>products.php?offer=1" class="text-light text-decoration-none hover-yellow">Specials & Offers</a></li>
+                    <li class="mb-2"><a href="<?php echo BASE_URL; ?>login.php" class="text-light text-decoration-none hover-yellow">Your Account</a></li>
+                    <li class="mb-2"><a href="<?php echo BASE_URL; ?>cart.php" class="text-light text-decoration-none hover-yellow">Shopping Cart</a></li>
                 </ul>
             </div>
             <div class="col-md-4">
-                <h5 class="font-weight-bold mb-4" style="color: var(--secondary-color);"><?php echo __('Contact Us'); ?></h5>
+                <h5 class="font-weight-bold mb-4" style="color: var(--secondary-color);">Contact Us</h5>
                 <ul class="list-unstyled text-light small contact-links">
                     <li class="mb-2">
                         <a href="https://www.google.com/maps/search/?api=1&query=2+pitt+street,+NSW+2000" target="_blank" class="text-light text-decoration-none hover-yellow">
@@ -57,36 +57,8 @@
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-
 <script>
 $(document).ready(function() {
-    // 1. Initialize Sun/Moon Toggle Icon depending on active theme
-    const activeTheme = localStorage.getItem('theme') || 'light';
-    const themeIcon = $('#theme-toggle-icon');
-    if (themeIcon.length) {
-        themeIcon.attr('class', activeTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon');
-    }
-
-    // 2. Dark & Night Mode Toggler Click Event Handler
-    $('#theme-toggle').on('click', function(e) {
-        e.preventDefault();
-        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        
-        // Update DOM & LocalStorage
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-        
-        // Update Icon Class with rotation micro-animation
-        $(this).css('transform', 'rotate(360deg)');
-        setTimeout(() => {
-            $(this).css('transform', 'rotate(0deg)');
-        }, 300);
-        
-        themeIcon.attr('class', newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon');
-    });
-
-    // 3. AJAX cart additions form submit handler
     $('form[action*="cart_action.php"]').on('submit', function(e) {
         var actionInput = $(this).find('input[name="action"]').val();
         if (actionInput === 'add') {

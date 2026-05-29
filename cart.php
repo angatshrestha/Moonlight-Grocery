@@ -16,16 +16,6 @@ if (!empty($cartItems)) {
     <h1 class="h3 font-weight-bold">Your Cart</h1>
 </div>
 
-<?php if (isset($_SESSION['cart_warning'])): ?>
-    <div class="alert alert-warning alert-dismissible fade show border border-warning shadow-sm mb-4" role="alert" style="border-radius: 12px; background: rgba(255, 193, 7, 0.1); color: var(--text-color);">
-        <i class="fas fa-exclamation-triangle mr-2 text-warning"></i> <?php echo $_SESSION['cart_warning']; ?>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close" style="opacity: 1; color: var(--text-color);">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-    <?php unset($_SESSION['cart_warning']); ?>
-<?php endif; ?>
-
 <div class="row">
     <div class="col-md-8">
         <div class="card shadow-sm mb-4">
@@ -55,14 +45,7 @@ if (!empty($cartItems)) {
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <img src="<?php echo htmlspecialchars($product->image_url); ?>" alt="" class="rounded" style="width: 50px; height: 50px; object-fit: cover; margin-right: 15px;">
-                                                <div>
-                                                    <h6 class="mb-0 font-weight-bold"><?php echo htmlspecialchars($product->name); ?></h6>
-                                                    <?php if ($product->stock <= 5): ?>
-                                                        <span class="badge badge-danger px-2 py-1 mt-1" style="font-size: 0.7rem;"><i class="fas fa-exclamation-circle mr-1"></i> Only <?php echo $product->stock; ?> left!</span>
-                                                    <?php else: ?>
-                                                        <span class="badge text-muted border px-2 py-1 mt-1" style="font-size: 0.7rem; background: var(--background-color); border-color: var(--border-color) !important;"><i class="fas fa-check text-success mr-1"></i> In Stock (<?php echo $product->stock; ?>)</span>
-                                                    <?php endif; ?>
-                                                </div>
+                                                <h6 class="mb-0 font-weight-bold"><?php echo htmlspecialchars($product->name); ?></h6>
                                             </div>
                                         </td>
                                         <td class="text-center">
