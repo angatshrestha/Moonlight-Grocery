@@ -16,10 +16,10 @@
             <div class="col-md-4 mb-4 mb-md-0">
                 <h5 class="font-weight-bold mb-4" style="color: var(--secondary-color);">Quick Links</h5>
                 <ul class="list-unstyled">
-                    <li class="mb-2"><a href="products.php" class="text-light text-decoration-none hover-yellow">Shop All</a></li>
-                    <li class="mb-2"><a href="products.php?offer=1" class="text-light text-decoration-none hover-yellow">Specials & Offers</a></li>
-                    <li class="mb-2"><a href="login.php" class="text-light text-decoration-none hover-yellow">Your Account</a></li>
-                    <li class="mb-2"><a href="cart.php" class="text-light text-decoration-none hover-yellow">Shopping Cart</a></li>
+                    <li class="mb-2"><a href="<?php echo BASE_URL; ?>products.php" class="text-light text-decoration-none hover-yellow">Shop All</a></li>
+                    <li class="mb-2"><a href="<?php echo BASE_URL; ?>products.php?offer=1" class="text-light text-decoration-none hover-yellow">Specials & Offers</a></li>
+                    <li class="mb-2"><a href="<?php echo BASE_URL; ?>login.php" class="text-light text-decoration-none hover-yellow">Your Account</a></li>
+                    <li class="mb-2"><a href="<?php echo BASE_URL; ?>cart.php" class="text-light text-decoration-none hover-yellow">Shopping Cart</a></li>
                 </ul>
             </div>
             <div class="col-md-4">
@@ -57,5 +57,32 @@
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('form[action*="cart_action.php"]').on('submit', function(e) {
+        var actionInput = $(this).find('input[name="action"]').val();
+        if (actionInput === 'add') {
+            e.preventDefault();
+            var form = $(this);
+            var formData = form.serialize() + '&ajax=1';
+            var submitBtn = form.find('button[type="submit"]');
+            var originalText = submitBtn.html();
+            submitBtn.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
+            
+            $.post('<?php echo BASE_URL; ?>cart_action.php', formData, function(response) {
+                if(response.success) {
+                    $('#cart-count').text(response.cart_count);
+                    submitBtn.html('<i class="fas fa-check"></i>').addClass('text-success');
+                    setTimeout(function() {
+                        submitBtn.html(originalText).prop('disabled', false).removeClass('text-success');
+                    }, 1500);
+                }
+            }, 'json').fail(function() {
+                submitBtn.html(originalText).prop('disabled', false);
+            });
+        }
+    });
+});
+</script>
 </body>
 </html>

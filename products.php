@@ -18,6 +18,11 @@ if (isset($_GET['offer']) && $_GET['offer'] == 1) {
     $whereClause .= " AND p.is_offer = 1";
 }
 
+if (isset($_GET['search']) && trim($_GET['search']) !== '') {
+    $whereClause .= " AND p.name LIKE :search";
+    $params[':search'] = '%' . trim($_GET['search']) . '%';
+}
+
 // Fetch products based on filter
 $stmt = $pdo->prepare("SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE $whereClause ORDER BY p.name ASC");
 $stmt->execute($params);
@@ -42,10 +47,11 @@ $products = $stmt->fetchAll();
     
     <!-- Product Grid -->
     <div class="col-lg-9">
-        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-            <h1 class="h3 font-weight-bold mb-0">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 border-bottom pb-3">
+            <h1 class="h3 font-weight-bold mb-3 mb-md-0">
                 <?php 
-                    if (isset($_GET['offer']) && $_GET['offer'] == 1) echo "Specials & Offers";
+                    if (isset($_GET['search']) && trim($_GET['search']) !== '') echo "Search: " . htmlspecialchars($_GET['search']);
+                    elseif (isset($_GET['offer']) && $_GET['offer'] == 1) echo "Specials & Offers";
                     elseif (isset($_GET['category'])) {
                         $key = array_search($_GET['category'], array_column($categories, 'id'));
                         echo $key !== false ? htmlspecialchars($categories[$key]['name']) : "Our Products";
@@ -54,7 +60,23 @@ $products = $stmt->fetchAll();
                     }
                 ?>
             </h1>
-            <span class="text-muted"><?php echo count($products); ?> items found</span>
+            <div class="d-flex align-items-center">
+                <form action="products.php" method="GET" class="form-inline mr-3">
+                    <?php if(isset($_GET['category'])): ?>
+                        <input type="hidden" name="category" value="<?php echo htmlspecialchars($_GET['category']); ?>">
+                    <?php endif; ?>
+                    <?php if(isset($_GET['offer'])): ?>
+                        <input type="hidden" name="offer" value="<?php echo htmlspecialchars($_GET['offer']); ?>">
+                    <?php endif; ?>
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" placeholder="Search products..." value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
+                        </div>
+                    </div>
+                </form>
+                <span class="text-muted d-none d-sm-block"><?php echo count($products); ?> items</span>
+            </div>
         </div>
 
         <?php if(empty($products)): ?>
@@ -62,7 +84,7 @@ $products = $stmt->fetchAll();
         <?php else: ?>
             <div class="row">
                 <?php foreach($products as $product): ?>
-                <div class="col-md-4 col-sm-6 mb-4">
+                <div class="col-6 col-md-4 mb-4">
                     <div class="card h-100 shadow-sm border-0">
                         <div class="position-relative">
                             <?php if(isset($product->is_offer) && $product->is_offer == 1): ?>
@@ -82,7 +104,7 @@ $products = $stmt->fetchAll();
                                 <?php else: ?>
                                     <span class="font-weight-bold text-success h5 mb-0">$<?php echo number_format($product->price, 2); ?></span>
                                 <?php endif; ?>
-                                <form action="cart_action.php" method="POST">
+                                <form action="cart_action.php" method="POST" class="ajax-add-to-cart">
                                     <input type="hidden" name="action" value="add">
                                     <input type="hidden" name="product_id" value="<?php echo $product->id; ?>">
                                     <button type="submit" class="btn btn-sm text-dark font-weight-bold" style="background-color: var(--secondary-color);"><i class="fas fa-plus"></i> Add</button>

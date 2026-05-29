@@ -27,6 +27,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             unset($_SESSION['cart'][$product_id]);
         }
     }
+    if (isset($_POST['ajax']) && $_POST['ajax'] == '1') {
+        $cart_count = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true, 'cart_count' => $cart_count]);
+        exit;
+    }
 }
 
 // Redirect back to where they came from

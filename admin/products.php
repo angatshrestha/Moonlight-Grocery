@@ -6,6 +6,21 @@ if (!isAdmin()) {
     exit;
 }
 
+// Function to handle image upload
+function handleImageUpload($fileArray, $fallbackUrl) {
+    if (isset($fileArray) && $fileArray['error'] === UPLOAD_ERR_OK) {
+        $uploadDir = __DIR__ . '/../assets/img/products/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+        $filename = time() . '_' . preg_replace("/[^a-zA-Z0-9.]/", "", basename($fileArray['name']));
+        if (move_uploaded_file($fileArray['tmp_name'], $uploadDir . $filename)) {
+            return 'assets/img/products/' . $filename;
+        }
+    }
+    return $fallbackUrl;
+}
+
 // Handle Add Product
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] == 'add') {
     $name = $_POST['name'];
@@ -14,7 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $old_price = !empty($_POST['old_price']) ? $_POST['old_price'] : null;
     $stock = $_POST['stock'];
     $description = $_POST['description'];
-    $image_url = $_POST['image_url'];
+    
+    $image_url = handleImageUpload($_FILES['image_file'] ?? null, $_POST['image_url'] ?? '');
     
     // If old_price is set, we can consider it an offer. Let's set is_offer = 1 if old_price is provided.
     $is_offer = $old_price ? 1 : 0;
@@ -40,7 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $price = $_POST['price'];
     $stock = $_POST['stock'];
     $description = $_POST['description'];
-    $image_url = $_POST['image_url'];
+    
+    $image_url = handleImageUpload($_FILES['image_file'] ?? null, $_POST['image_url'] ?? '');
     
     $stmt = $pdo->prepare("UPDATE products SET category_id = ?, name = ?, description = ?, price = ?, stock = ?, image_url = ? WHERE id = ?");
     $stmt->execute([$category_id, $name, $description, $price, $stock, $image_url, $id]);
@@ -98,7 +115,16 @@ $categories = $pdo->query("SELECT * FROM categories")->fetchAll();
                     <?php foreach($products as $p): ?>
                     <tr>
                         <td><?php echo $p->id; ?></td>
-                        <td><img src="<?php echo htmlspecialchars($p->image_url); ?>" alt="" style="width:40px;height:40px;object-fit:cover;" class="rounded"></td>
+                        <td>
+                            <?php 
+                                $img_src = $p->image_url;
+                                // If it's a relative path starting with assets/, we prepend ../ to load it correctly in the admin folder
+                                if (strpos($img_src, 'assets/') === 0) {
+                                    $img_src = '../' . $img_src;
+                                }
+                            ?>
+                            <img src="<?php echo htmlspecialchars($img_src); ?>" alt="" style="width:40px;height:40px;object-fit:cover;" class="rounded">
+                        </td>
                         <td class="font-weight-bold"><?php echo htmlspecialchars($p->name); ?></td>
                         <td><?php echo htmlspecialchars($p->category_name); ?></td>
                         <td class="text-right">
@@ -164,7 +190,7 @@ $categories = $pdo->query("SELECT * FROM categories")->fetchAll();
                                             <h5 class="modal-title font-weight-bold">Edit Product</h5>
                                             <button type="button" class="close" data-dismiss="modal">&times;</button>
                                         </div>
-                                        <form method="POST">
+                                        <form method="POST" enctype="multipart/form-data">
                                             <div class="modal-body">
                                                 <input type="hidden" name="action" value="edit">
                                                 <input type="hidden" name="product_id" value="<?php echo $p->id; ?>">
@@ -191,9 +217,16 @@ $categories = $pdo->query("SELECT * FROM categories")->fetchAll();
                                                         <input type="number" name="stock" class="form-control" value="<?php echo $p->stock; ?>" required>
                                                     </div>
                                                 </div>
-                                                <div class="form-group">
-                                                    <label>Image URL</label>
-                                                    <input type="url" name="image_url" class="form-control" value="<?php echo htmlspecialchars($p->image_url); ?>" required>
+                                                <div class="form-group p-3 bg-light rounded border">
+                                                    <label class="font-weight-bold text-primary"><i class="fas fa-upload mr-2"></i>Upload New Image</label>
+                                                    <input type="file" name="image_file" class="form-control-file mb-2" accept="image/*">
+                                                    <small class="form-text text-muted">Select an image from your computer to replace the current one.</small>
+                                                    
+                                                    <hr class="my-3">
+                                                    
+                                                    <label class="font-weight-bold text-secondary">OR keep/use an Image URL</label>
+                                                    <input type="text" name="image_url" class="form-control" value="<?php echo htmlspecialchars($p->image_url); ?>">
+                                                    <small class="form-text text-muted">Leave this alone if you are uploading a file above.</small>
                                                 </div>
                                                 <div class="form-group">
                                                     <label>Description</label>
@@ -225,7 +258,7 @@ $categories = $pdo->query("SELECT * FROM categories")->fetchAll();
                 <h5 class="modal-title font-weight-bold">Add New Product</h5>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 <div class="modal-body">
                     <input type="hidden" name="action" value="add">
                     <div class="form-group">
@@ -254,10 +287,19 @@ $categories = $pdo->query("SELECT * FROM categories")->fetchAll();
                             <input type="number" name="stock" class="form-control" required>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label>Image URL</label>
-                        <input type="url" name="image_url" class="form-control" required>
+                    
+                    <div class="form-group p-3 bg-light rounded border">
+                        <label class="font-weight-bold text-primary"><i class="fas fa-upload mr-2"></i>Upload Image</label>
+                        <input type="file" name="image_file" class="form-control-file mb-2" accept="image/*">
+                        <small class="form-text text-muted">Select an image from your computer to use for this product.</small>
+                        
+                        <hr class="my-3">
+                        
+                        <label class="font-weight-bold text-secondary">OR use an Image URL</label>
+                        <input type="text" name="image_url" class="form-control" placeholder="https://...">
+                        <small class="form-text text-muted">Leave this blank if you are uploading a file above.</small>
                     </div>
+
                     <div class="form-group">
                         <label>Description</label>
                         <textarea name="description" class="form-control" rows="3" required></textarea>

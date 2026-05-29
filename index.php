@@ -6,7 +6,7 @@ $stmt = $pdo->query("SELECT * FROM products LIMIT 3");
 $featuredProducts = $stmt->fetchAll();
 
 // Fetch daily offers
-$offerStmt = $pdo->query("SELECT * FROM products WHERE is_offer = 1 LIMIT 5");
+$offerStmt = $pdo->query("SELECT * FROM products WHERE is_offer = 1 ORDER BY RAND() LIMIT 5");
 $dailyOffers = $offerStmt->fetchAll();
 ?>
 
