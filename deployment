@@ -1,0 +1,60 @@
+# Week 11 — Deployment
+
+## Expected Deliverable
+Deploy the application to a live hosting environment.
+
+## Activities Completed
+- Set up web hosting environment.
+- Uploaded project files.
+- Imported database into phpMyAdmin.
+- Configured database connection settings.
+- Tested the deployed application.
+
+## Deployment Requirements
+- PHP-enabled web hosting
+- MySQL database
+- phpMyAdmin access
+- Project source files
+- Database SQL file
+
+## Deployment Process
+
+### Step 1: Upload Files
+Upload all PHP, CSS, JavaScript, and image files to the hosting server.
+
+### Step 2: Create Database
+Create a MySQL database using the hosting control panel.
+
+### Step 3: Import Database
+Import the `database.sql` file through phpMyAdmin.
+
+### Step 4: Configure Application
+Update `config.php` with:
+- Database Host
+- Database Name
+- Username
+- Password
+
+### Step 5: Test Application
+Verify:
+- Home page loads correctly.
+- User login works.
+- Products are displayed.
+- Cart functions properly.
+- Checkout process completes successfully.
+
+## Live URL
+```
+https://moonlight999.infinityfree.me/index.php
+```
+
+## Deployment Issues
+- Database connection configuration errors.
+- Incorrect file paths.
+- Missing CSS or image files.
+
+## Deliverable
+- Live website URL
+- Deployment documentation
+- Configuration details
+- Deployment screenshots
