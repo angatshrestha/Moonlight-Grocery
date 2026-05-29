@@ -69,11 +69,13 @@ body {
 }
 
 .card-img-top {
+    width: 100%;
     height: 200px;
     object-fit: contain;
     background: #ffffff;
     padding: 1.25rem;
     transition: transform 0.3s ease;
+    flex-shrink: 0; /* Prevents Safari flexbox from squishing or stretching images */
 }
 
 .card:hover .card-img-top {
@@ -228,6 +230,8 @@ body {
 
 .woolworths-banner .banner-content {
     width: 45%;
+    flex: 0 0 45%; /* Safe Safari flex base */
+    max-width: 45%;
     height: 100%;
     background-color: var(--primary-color); /* Lock solid background on the content side */
     padding: 3rem !important;
@@ -238,6 +242,8 @@ body {
 
 .woolworths-banner .banner-image {
     width: 55%;
+    flex: 0 0 55%; /* Safe Safari flex base */
+    max-width: 55%;
     height: 100%;
     background: #ffffff; /* Seamlessly blend the product's white background */
     display: flex;
@@ -274,6 +280,8 @@ body {
 
 .offers-content-panel {
     width: 50%;
+    flex: 0 0 50%; /* Lock exact 50% flex base for Safari */
+    max-width: 50%;
     padding: 3rem !important;
     display: flex;
     flex-direction: column;
@@ -294,6 +302,8 @@ body {
 
 .offers-image-panel {
     width: 50%;
+    flex: 0 0 50%; /* Lock exact 50% flex base for Safari */
+    max-width: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
