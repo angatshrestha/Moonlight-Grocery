@@ -9,11 +9,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['cart'] = [];
     }
 
+    if ($product_id) {
+        $stmt = $pdo->prepare("SELECT stock, name FROM products WHERE id = ?");
+        $stmt->execute([$product_id]);
+        $prod = $stmt->fetch();
+        $stock = $prod ? (int)$prod->stock : 0;
+        $prodName = $prod ? $prod->name : 'Product';
+    }
+
     if ($action === 'add' && $product_id) {
-        if (isset($_SESSION['cart'][$product_id])) {
-            $_SESSION['cart'][$product_id]++;
+        $currentQty = isset($_SESSION['cart'][$product_id]) ? $_SESSION['cart'][$product_id] : 0;
+        $newQty = $currentQty + 1;
+        if ($newQty > $stock) {
+            $_SESSION['cart'][$product_id] = $stock;
+            $_SESSION['cart_warning'] = "Capped " . htmlspecialchars($prodName) . " at maximum available stock ($stock items left).";
         } else {
-            $_SESSION['cart'][$product_id] = 1;
+            $_SESSION['cart'][$product_id] = $newQty;
         }
     } elseif ($action === 'remove' && $product_id) {
         if (isset($_SESSION['cart'][$product_id])) {
@@ -21,7 +32,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif ($action === 'update' && $product_id) {
         $qty = (int)$_POST['quantity'];
-        if ($qty > 0) {
+        if ($qty > $stock) {
+            $_SESSION['cart'][$product_id] = $stock;
+            $_SESSION['cart_warning'] = "Capped " . htmlspecialchars($prodName) . " at maximum available stock ($stock items left).";
+        } elseif ($qty > 0) {
             $_SESSION['cart'][$product_id] = $qty;
         } else {
             unset($_SESSION['cart'][$product_id]);

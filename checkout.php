@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if (empty($street) || empty($city) || empty($phone)) {
         $error = "Delivery address and phone number are required.";
-    } elseif ($verified !== '1') {
+    } elseif ($verified !== '1' || !isset($_SESSION['otp_verified']) || $_SESSION['otp_verified'] !== true) {
         $error = "Please verify your phone number via OTP.";
     } else {
         try {
@@ -79,19 +79,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $total = max(0, $subtotal - $discount);
             $pointsEarned = floor($total); // 1 point per $1 spent
+            $tax_amount = round($total * 0.10, 2); // 10% tax
+            $payment_method = $_POST['payment_method'] ?? 'card';
+            $transaction_id = 'ch_' . substr(md5(uniqid(rand(), true)), 0, 16);
+            if ($payment_method === 'paypal' && !empty($_POST['paypal_transaction_id'])) {
+                $transaction_id = $_POST['paypal_transaction_id'];
+            }
+            $payment_status = 'paid';
             
-            // Create order
-            $stmt = $pdo->prepare("INSERT INTO orders (user_id, total_amount, delivery_address, phone) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$_SESSION['user_id'], $total, $address, $phone]);
+            // Create order with tax, payment method, status, and transaction tracking
+            $stmt = $pdo->prepare("INSERT INTO orders (user_id, total_amount, tax_amount, delivery_fee, status, payment_method, transaction_id, payment_status, delivery_address, phone) VALUES (?, ?, ?, 0.00, 'confirmed', ?, ?, ?, ?, ?)");
+            $stmt->execute([$_SESSION['user_id'], $total, $tax_amount, $payment_method, $transaction_id, $payment_status, $address, $phone]);
             $orderId = $pdo->lastInsertId();
             
-            // Create order items
+            // Create order items with stock verification
             $stmt = $pdo->prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
             foreach ($cartItems as $pid => $qty) {
+                // Verify available stock inside transaction
+                $stockCheck = $pdo->prepare("SELECT stock, name FROM products WHERE id = ? FOR UPDATE");
+                $stockCheck->execute([$pid]);
+                $prod = $stockCheck->fetch();
+                if (!$prod || $prod->stock < $qty) {
+                    throw new Exception("Sorry, " . ($prod ? $prod->name : "Product") . " does not have enough stock available to complete your order.");
+                }
+
                 $stmt->execute([$orderId, $pid, $qty, $productPrices[$pid]]);
                 
-                // Update stock
-                $pdo->query("UPDATE products SET stock = stock - $qty WHERE id = $pid");
+                // Decrement product stock
+                $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?")->execute([$qty, $pid]);
             }
             
             // Update user points
@@ -99,10 +114,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $pdo->commit();
             unset($_SESSION['cart']);
+            unset($_SESSION['otp_code']);
+            unset($_SESSION['otp_expiry']);
+            unset($_SESSION['otp_verified']);
             $success = "Order placed successfully! You earned $pointsEarned reward points.";
         } catch (Exception $e) {
             $pdo->rollBack();
-            $error = "Failed to place order. Please try again.";
+            $error = $e->getMessage() ?: "Failed to place order. Please try again.";
         }
     }
 }
@@ -170,56 +188,162 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <button type="button" class="btn btn-outline-primary" id="btn-send-otp" onclick="sendOTP()">Send OTP</button>
                                 </div>
                             </div>
-                            <small class="text-muted" id="otp-hint" style="display: none;">Simulated OTP is: <strong>1234</strong></small>
+                            <small class="text-success font-weight-bold" id="otp-sent-status" style="display: none;"><i class="fas fa-check"></i> Verification code requested.</small>
                         </div>
                         
                         <div class="form-group" id="otp-group" style="display: none;">
-                            <label for="otp" class="font-weight-bold">Enter OTP</label>
+                            <label for="otp" class="font-weight-bold">Enter 6-Digit OTP</label>
                             <div class="input-group">
-                                <input type="text" id="otp" class="form-control" placeholder="4-digit code" maxlength="4">
+                                <input type="text" id="otp" class="form-control" placeholder="6-digit code" maxlength="6">
                                 <div class="input-group-append">
                                     <button type="button" class="btn btn-success" onclick="verifyOTP()">Verify</button>
                                 </div>
                             </div>
-                            <small class="text-danger" id="otp-error" style="display: none;">Invalid OTP.</small>
+                            <small class="text-danger font-weight-bold" id="otp-error" style="display: none;"></small>
                         </div>
                         
                         <!-- Hidden input to track verification status -->
                         <input type="hidden" name="phone_verified" id="phone_verified" value="0">
                         <script>
+                            function showSMSNotification(otpCode) {
+                                // Remove any existing badge first
+                                const existingBadge = document.getElementById('simulated-sms-badge');
+                                if (existingBadge) existingBadge.remove();
+
+                                const smsBadge = document.createElement('div');
+                                smsBadge.id = 'simulated-sms-badge';
+                                smsBadge.style.position = 'fixed';
+                                smsBadge.style.top = '85px';
+                                smsBadge.style.right = '-350px';
+                                smsBadge.style.width = '320px';
+                                smsBadge.style.background = 'rgba(21, 12, 38, 0.95)';
+                                smsBadge.style.color = '#fff';
+                                smsBadge.style.padding = '16px';
+                                smsBadge.style.borderRadius = '16px';
+                                smsBadge.style.boxShadow = '0 12px 30px rgba(0,0,0,0.5)';
+                                smsBadge.style.zIndex = '9999';
+                                smsBadge.style.transition = 'right 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                                smsBadge.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                                smsBadge.style.borderLeft = '6px solid var(--secondary-color)';
+                                smsBadge.style.backdropFilter = 'blur(10px)';
+                                smsBadge.style.border = '1px solid rgba(255,255,255,0.1)';
+                                
+                                smsBadge.innerHTML = `
+                                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                        <div style="background: var(--secondary-color); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; margin-right: 10px;">
+                                            <i class="fas fa-comment-alt" style="font-size: 13px; color: #000;"></i>
+                                        </div>
+                                        <strong style="flex-grow: 1; color: var(--secondary-color); font-size: 14px;">MOONLIGHT SMS</strong>
+                                        <small style="color: rgba(255,255,255,0.6); font-size: 11px;">just now</small>
+                                    </div>
+                                    <div style="font-size: 13px; line-height: 1.4; color: rgba(255,255,255,0.9);">
+                                        Your security verification code is <strong style="color: var(--secondary-color); font-size: 16px; letter-spacing: 2px; font-family: monospace;">${otpCode}</strong>. Valid for 5 minutes.
+                                    </div>
+                                `;
+                                
+                                document.body.appendChild(smsBadge);
+                                
+                                setTimeout(() => {
+                                    smsBadge.style.right = '20px';
+                                }, 100);
+                                
+                                setTimeout(() => {
+                                    smsBadge.style.right = '-350px';
+                                    setTimeout(() => {
+                                        smsBadge.remove();
+                                    }, 600);
+                                }, 12000);
+                            }
+
                             function sendOTP() {
-                                var phone = document.getElementById('phone').value;
-                                if(phone.length < 5) {
+                                var phone = document.getElementById('phone').value.trim();
+                                if(phone.length < 8) {
                                     alert("Please enter a valid phone number first.");
                                     return;
                                 }
-                                document.getElementById('btn-send-otp').innerText = "Sent!";
-                                document.getElementById('btn-send-otp').classList.replace('btn-outline-primary', 'btn-secondary');
-                                document.getElementById('otp-group').style.display = 'block';
-                                document.getElementById('otp-hint').style.display = 'block';
+                                
+                                var btn = document.getElementById('btn-send-otp');
+                                btn.disabled = true;
+                                btn.innerText = "Sending...";
+
+                                var formData = new FormData();
+                                formData.append('phone', phone);
+
+                                fetch('send_otp.php', {
+                                    method: 'POST',
+                                    body: formData
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if(data.success) {
+                                        btn.innerText = "Resend OTP";
+                                        btn.disabled = false;
+                                        document.getElementById('otp-group').style.display = 'block';
+                                        document.getElementById('otp-sent-status').style.display = 'block';
+                                        showSMSNotification(data.otp);
+                                    } else {
+                                        alert(data.message);
+                                        btn.disabled = false;
+                                        btn.innerText = "Send OTP";
+                                    }
+                                })
+                                .catch(err => {
+                                    console.error(err);
+                                    btn.disabled = false;
+                                    btn.innerText = "Send OTP";
+                                    alert("Failed to send OTP. Check connection.");
+                                });
                             }
                             
                             function verifyOTP() {
-                                var otp = document.getElementById('otp').value;
-                                if(otp === '1234') {
-                                    document.getElementById('phone_verified').value = '1';
-                                    document.getElementById('otp-group').innerHTML = '<div class="alert alert-success py-2 mb-0"><i class="fas fa-check-circle"></i> Phone verified successfully!</div>';
-                                    document.getElementById('phone').readOnly = true;
-                                    document.getElementById('btn-send-otp').style.display = 'none';
-                                    document.getElementById('otp-hint').style.display = 'none';
-                                } else {
-                                    document.getElementById('otp-error').style.display = 'block';
+                                var otp = document.getElementById('otp').value.trim();
+                                var errText = document.getElementById('otp-error');
+                                errText.style.display = 'none';
+
+                                if(otp.length !== 6) {
+                                    errText.innerText = "Please enter the 6-digit code.";
+                                    errText.style.display = 'block';
+                                    return;
                                 }
+
+                                var formData = new FormData();
+                                formData.append('otp', otp);
+
+                                fetch('verify_otp.php', {
+                                    method: 'POST',
+                                    body: formData
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if(data.success) {
+                                        document.getElementById('phone_verified').value = '1';
+                                        document.getElementById('otp-group').innerHTML = '<div class="alert alert-success py-2 mb-0" style="border-radius: 8px;"><i class="fas fa-check-circle mr-1"></i> Phone verified successfully!</div>';
+                                        document.getElementById('phone').readOnly = true;
+                                        document.getElementById('btn-send-otp').style.display = 'none';
+                                        document.getElementById('otp-sent-status').style.display = 'none';
+                                    } else {
+                                        errText.innerText = data.message;
+                                        errText.style.display = 'block';
+                                    }
+                                })
+                                .catch(err => {
+                                    console.error(err);
+                                    errText.innerText = "Failed to verify. Please try again.";
+                                    errText.style.display = 'block';
+                                });
                             }
                             
                             // Prevent form submission if phone is not verified
                             document.addEventListener('DOMContentLoaded', function() {
-                                document.querySelector('form').addEventListener('submit', function(e) {
-                                    if(document.getElementById('phone_verified').value === '0') {
-                                        e.preventDefault();
-                                        alert("Please verify your phone number with OTP before placing the order.");
-                                    }
-                                });
+                                const form = document.getElementById('checkout-form');
+                                if (form) {
+                                    form.addEventListener('submit', function(e) {
+                                        if(document.getElementById('phone_verified').value === '0') {
+                                            e.preventDefault();
+                                            alert("Please verify your phone number with OTP before placing the order.");
+                                        }
+                                    });
+                                }
                             });
                         </script>
                         
@@ -278,7 +402,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="form-group">
                                 <label class="font-weight-bold">Card Number</label>
                                 <div class="input-group">
-                                    <input type="text" class="form-control payment-input" required placeholder="XXXX XXXX XXXX XXXX" pattern="\d{16}" title="Please enter 16 digits" maxlength="16">
+                                    <input type="text" class="form-control payment-input" required placeholder="XXXX XXXX XXXX XXXX" pattern="[0-9 ]{19}" title="Please enter a 16-digit card number" maxlength="19">
                                     <div class="input-group-append">
                                         <span class="input-group-text"><i class="fab fa-cc-visa text-primary mr-1"></i><i class="fab fa-cc-mastercard text-danger"></i></span>
                                     </div>
@@ -393,6 +517,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 }
                             }
                             
+                            // Card formatting input masks
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const cardNumberInput = document.querySelector('input[placeholder="XXXX XXXX XXXX XXXX"]');
+                                const expiryInput = document.querySelector('input[placeholder="MM/YY"]');
+                                const cvvInput = document.querySelector('input[placeholder="123"]');
+                                
+                                if(cardNumberInput) {
+                                    cardNumberInput.addEventListener('input', function(e) {
+                                        let val = this.value.replace(/\D/g, '');
+                                        let formatted = '';
+                                        for(let i=0; i<val.length; i++) {
+                                            if(i > 0 && i % 4 === 0) formatted += ' ';
+                                            formatted += val[i];
+                                        }
+                                        this.value = formatted.substring(0, 19); // 16 digits + 3 spaces
+                                    });
+                                }
+                                
+                                if(expiryInput) {
+                                    expiryInput.addEventListener('input', function(e) {
+                                        let val = this.value.replace(/\D/g, '');
+                                        if(val.length > 2) {
+                                            this.value = val.substring(0, 2) + '/' + val.substring(2, 4);
+                                        } else {
+                                            this.value = val;
+                                        }
+                                    });
+                                }
+                                
+                                if(cvvInput) {
+                                    cvvInput.addEventListener('input', function(e) {
+                                        this.value = this.value.replace(/\D/g, '').substring(0, 4);
+                                    });
+                                }
+                            });
+
                             // Initialize on load
                             document.addEventListener("DOMContentLoaded", function() {
                                 togglePaymentForm();
