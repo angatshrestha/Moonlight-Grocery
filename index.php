@@ -19,7 +19,7 @@ $dailyOffers = $offerStmt->fetchAll();
                     <?php if (!empty($dailyOffers)): ?>
                         <?php foreach($dailyOffers as $index => $offer): ?>
                             <div class="carousel-item h-100 <?php echo $index === 0 ? 'active' : ''; ?>">
-                                <div class="woolworths-banner d-flex h-100" style="min-height: 400px;">
+                                <div class="woolworths-banner d-flex h-100">
                                     <div class="banner-content text-white p-5 d-flex flex-column justify-content-center" style="width: 45%;">
                                         <div class="rounded-circle text-dark d-flex align-items-center justify-content-center mb-4 shadow" style="background-color: var(--secondary-color); width: 90px; height: 90px; font-weight: bold; font-size: 1.1rem; transform: rotate(-5deg);">
                                             Daily<br>Offer
@@ -44,7 +44,7 @@ $dailyOffers = $offerStmt->fetchAll();
                     <?php else: ?>
                         <!-- Fallback static banner if no offers exist -->
                         <div class="carousel-item active h-100">
-                            <div class="woolworths-banner d-flex h-100" style="min-height: 400px;">
+                            <div class="woolworths-banner d-flex h-100">
                                 <div class="banner-content text-white p-5 d-flex flex-column justify-content-center" style="width: 45%;">
                                     <h2 class="font-weight-bold mb-3" style="font-size: 2.5rem; line-height: 1.1;">Welcome to Moonlight</h2>
                                     <p class="mb-4" style="font-size: 1.1rem;">Discover fresh produce and daily essentials.</p>
@@ -52,8 +52,8 @@ $dailyOffers = $offerStmt->fetchAll();
                                         <a href="products.php" class="btn text-dark font-weight-bold px-4 py-2" style="background-color: var(--secondary-color); border: none; border-radius: 8px;">Shop now</a>
                                     </div>
                                 </div>
-                                <div class="banner-image position-relative" style="width: 55%; min-height: 400px;">
-                                    <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Groceries" style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
+                                <div class="banner-image">
+                                    <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Groceries" style="width: 100%; height: 100%; object-fit: cover;">
                                 </div>
                             </div>
                         </div>
