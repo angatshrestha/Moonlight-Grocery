@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/config.php';
 
 if (isLoggedIn()) {
     header("Location: index.php");
@@ -25,6 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $success = "If an account exists with that email, a reset link has been sent.";
     }
 }
+
+require_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="row justify-content-center">
