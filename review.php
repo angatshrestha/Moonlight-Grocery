@@ -61,9 +61,9 @@ try {
 }
 
 // Mailto URL for business inquiries
-$mailto_email = "angatshrestha2@gmail.com";
-$mailto_subject = rawurlencode("Project Inquiry from Moonlight Showcase");
-$mailto_body = rawurlencode("Hi Angat,\n\nI visited your e-commerce showcase today and was absolutely wowed by your Moonlight Grocery application! I'd love to chat about custom-building a similar digital retail product for our business.\n\nBest regards,\n[Your Name]\n[Company Name]");
+$mailto_email = "admin@asblend.com";
+$mailto_subject = rawurlencode("Project Inquiry for AS Blend");
+$mailto_body = rawurlencode("Hi Angat,\n\nI visited your AS Blend showcase today and was absolutely wowed by your Moonlight Grocery application! I'd love to chat about custom-building a similar digital e-commerce or web product for our business.\n\nBest regards,\n[Your Name]\n[Company Name]");
 $mailto_link = "mailto:$mailto_email?subject=$mailto_subject&body=$mailto_body";
 
 // Public free Google Chart API to dynamically generate a clean QR Code of the mailto link!
@@ -170,9 +170,9 @@ $qr_code_url = "https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=" . ur
             <span class="badge badge-warning text-dark font-weight-bold px-3 py-2 mb-3 pulsing-badge" style="font-size: 0.9rem; border-radius: 30px; letter-spacing: 0.5px;">
                 <i class="fas fa-trophy mr-1"></i> LIVE EXHIBITION SHOWCASE
             </span>
-            <h1 class="font-weight-bold text-white mb-2" style="font-size: 2.8rem; letter-spacing: -1px;">Exhibition Feedback & Staging</h1>
+            <h1 class="font-weight-bold text-white mb-2" style="font-size: 2.8rem; letter-spacing: -1px;">AS Blend Showcase Staging</h1>
             <p class="lead mb-0 text-light opacity-90" style="font-size: 1.1rem; line-height: 1.6;">
-                Welcome to our showcase page! Over **100+ visitors** are exploring our grocery solution today. Share your real-time review below, or scan the business QR code to draft a project inquiry directly to us!
+                Welcome to **AS Blend**! Over **100+ visitors** are exploring our digital products today. Share your real-time review below, or scan the business QR code to draft a project inquiry directly to us!
             </p>
         </div>
         <div class="col-md-4 text-center mt-4 mt-md-0">
@@ -271,9 +271,9 @@ $qr_code_url = "https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=" . ur
                 </span>
                 <h3 class="font-weight-bold text-white mb-3" style="font-size: 1.8rem;">Build Your Product With Us!</h3>
                 <p class="text-light opacity-80 mb-4" style="font-size: 0.95rem; line-height: 1.6;">
-                    Loved the premium visual aesthetics, responsive database interfaces, and support chatbot features of our **Moonlight Grocery** project? 
+                    Loved the premium visual aesthetics, responsive database interfaces, and support chatbot features of our flagship **Moonlight Grocery** showcase? 
                     <br><br>
-                    Scan the QR code below using your phone camera to **instantly draft an email** straight to our team to discuss your customized business needs!
+                    Scan the QR code below using your phone camera to **instantly draft an email** straight to our **AS Blend** team to discuss your customized business needs!
                 </p>
                 
                 <div class="qr-container mb-4 shadow">
