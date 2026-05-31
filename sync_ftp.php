@@ -26,6 +26,7 @@ if (@ftp_login($conn_id, $ftp_user, $ftp_pass)) {
         'invoice.php',
         'database.sql',
         'products.php',
+        'review.php',
         'includes/header.php',
         'includes/footer.php',
         'assets/css/style.css',

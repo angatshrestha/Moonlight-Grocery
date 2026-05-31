@@ -30,6 +30,9 @@ require_once __DIR__ . '/../config.php';
                     <a class="nav-link text-white font-weight-bold px-3" href="<?php echo BASE_URL; ?>products.php">Shop</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link text-white font-weight-bold px-3" href="<?php echo BASE_URL; ?>review.php"><i class="fas fa-star text-warning mr-1"></i> Reviews</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link text-white font-weight-bold px-3" href="<?php echo BASE_URL; ?>cart.php">
                         <i class="fas fa-shopping-cart"></i> Cart
                         <span class="badge badge-pill text-dark ml-1" id="cart-count" style="background-color: var(--secondary-color);">
